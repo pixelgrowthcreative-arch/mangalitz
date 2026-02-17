@@ -1,0 +1,331 @@
+/* ===============================
+   GLOBAL CONFIG
+=============================== */
+// pakai config global
+const BASE =
+  window.location.port === "5500"
+    ? "http://localhost:3000"
+    : window.location.origin;
+
+const API = `${BASE}/api/public`;
+const BASE_URL = BASE;
+
+
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+/* ===============================
+   HOME
+=============================== */
+let allManga = [];
+let activeGenre = null;
+
+async function loadMangaList() {
+  const res = await fetch(`${API}/manga`);
+  allManga = await res.json();
+  renderGenreFilters();
+  //renderManga(allManga);
+  renderSection(allManga);
+}
+
+function renderManga(mangaArray) {
+  const container = document.getElementById("manga-list");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  mangaArray.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "manga-card";
+    div.innerHTML = `
+      <img src="${BASE_URL}${m.cover_image}" alt="${m.title} อ่านมังงะแปลไทยฟรี" />
+      <h3>${m.title}</h3>
+      <p style="font-size:12px;opacity:.7">👁 ${m.views || 0} views</p>
+      <p style="font-size:12px;color:#aaa">
+        ${(m.genres || '').replace(/,/g, ' • ')}
+      </p>
+    `;
+    div.onclick = () => (window.location.href = `manga.html?id=${m.id}`);
+    container.appendChild(div);
+  });
+}
+
+/* ===============================
+   MANGA DETAIL (SEO + VIEW)
+=============================== */
+async function loadMangaDetail() {
+  const id = getParam("id");
+  if (!id) return;
+
+  // tambah view dulu
+  await fetch(`${API}/manga/${id}/view`, { method: "POST" });
+
+  const res = await fetch(`${API}/manga/${id}`);
+  const data = await res.json();
+
+  if (!data || data.error) {
+    document.body.innerHTML = "<h2>Manga not found</h2>";
+    return;
+  }
+
+  // ===== SEO THAI =====
+  document.title = `อ่าน ${data.title} แปลไทยฟรี - MangaLitz`;
+
+  const meta = document.querySelector('meta[name="description"]');
+  if (meta) {
+    meta.setAttribute(
+      "content",
+      `อ่าน ${data.title} แปลไทยฟรี อัปเดตล่าสุดที่ MangaLitz`
+    );
+  }
+
+  // ===== HERO COVER =====
+  const coverUrl = `${BASE_URL}${data.cover_image}`;
+  const hero = document.getElementById("hero");
+  const cover = document.getElementById("cover");
+
+  if (hero) hero.style.backgroundImage = `url(${coverUrl})`;
+  if (cover) cover.src = coverUrl;
+
+  // ===== TEXT =====
+  const titleEl = document.getElementById("title");
+  const descEl = document.getElementById("description");
+
+  if (titleEl) titleEl.innerText = data.title;
+  if (descEl) descEl.innerText = data.description;
+
+  // ===== CHAPTER LIST =====
+  const list = document.getElementById("chapter-list");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  data.chapters.forEach(ch => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <a href="reader.html?id=${ch.id}">
+        Chapter ${ch.chapter_number} - ${ch.title || ""}
+      </a>
+    `;
+    list.appendChild(li);
+  });
+}
+
+/* ===============================
+   READER
+=============================== */
+async function loadReader() {
+  const id = getParam("id");
+  if (!id) return;
+
+  const res = await fetch(`${API}/chapter/${id}`);
+  const pages = await res.json();
+
+  const container = document.getElementById("pages");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!pages.length) {
+    container.innerHTML = "<p>No pages yet</p>";
+    return;
+  }
+
+  pages.forEach(p => {
+    const img = document.createElement("img");
+    img.src = `${BASE_URL}${p.image_url}`;
+    img.alt = `manga page ${p.page_order}`;
+    container.appendChild(img);
+  });
+}
+
+/* ===============================
+   SEARCH + GENRE FILTER
+=============================== */
+function filterManga() {
+  const keyword = document
+    .getElementById("searchInput")
+    ?.value.toLowerCase() || "";
+
+  let filtered = allManga.filter(m =>
+    m.title.toLowerCase().includes(keyword)
+  );
+
+  if (activeGenre) {
+    filtered = filtered.filter(m =>
+      m.genres && m.genres.includes(activeGenre)
+    );
+  }
+
+  renderSection(filtered);
+}
+
+function renderGenreFilters() {
+  const container = document.getElementById("genre-filters");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const genresSet = new Set();
+  allManga.forEach(m => {
+    if (m.genres) m.genres.split(",").forEach(g => genresSet.add(g));
+  });
+
+  const reset = document.createElement("span");
+  reset.className = "genre-btn active";
+  reset.innerText = "All";
+  reset.onclick = () => {
+    activeGenre = null;
+    filterManga();
+  };
+  container.appendChild(reset);
+
+  genresSet.forEach(genre => {
+    const btn = document.createElement("span");
+    btn.className = "genre-btn";
+    btn.innerText = genre;
+    btn.onclick = () => {
+      activeGenre = genre;
+      filterManga();
+    };
+    container.appendChild(btn);
+  });
+}
+
+/* ===============================
+   ADS TRACKING
+=============================== */
+async function trackImpression(id) {
+  await fetch(`${API}/ads/${id}/impression`, { method: "POST" });
+}
+
+async function trackClick(id) {
+  await fetch(`${API}/ads/${id}/click`, { method: "POST" });
+}
+
+function renderAdToElement(ad, el) {
+  if (!el) return;
+
+  el.innerHTML = `
+    <a href="${ad.target_url}" target="_blank" onclick="trackClick(${ad.id})">
+      <img src="${ad.image_url}" style="max-width:100%; border-radius:8px;">
+    </a>
+  `;
+  trackImpression(ad.id);
+}
+
+async function loadMultipleAds(position, prefixId, count) {
+  const res = await fetch(`${API}/ads/${position}/multiple/${count}`);
+  const ads = await res.json();
+
+  ads.forEach((ad, i) => {
+    const el = document.getElementById(`${prefixId}-${i + 1}`);
+    renderAdToElement(ad, el);
+  });
+}
+
+async function loadGenreSection(genreName, containerId) {
+  const res = await fetch(`${API}/genre/${genreName}`);
+  const data = await res.json();
+
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  data.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "manga-card";
+    div.innerHTML = `
+      <img src="${BASE_URL}${m.cover_image}">
+      <h3>${m.title}</h3>
+    `;
+    div.onclick = () => (window.location.href = `manga.html?id=${m.id}`);
+    container.appendChild(div);
+  });
+}
+
+function renderSection(mangaArray){
+  renderGenreSection("Manga", "manga-section", mangaArray);
+  renderGenreSection("Manhwa", "manhwa-section", mangaArray);
+  renderGenreSection("Manhua", "manhua-section", mangaArray);
+  renderGenreSection("Hentai", "hentai-section", mangaArray);
+}
+
+
+function renderGenreSection(genreName, containerId, sourceData = allManga) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const filtered = sourceData.filter(m =>
+    m.genres && m.genres.includes(genreName)
+  );
+
+  container.innerHTML = "";
+
+  filtered.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "manga-card";
+    div.innerHTML = `
+      <img src="${BASE_URL}${m.cover_image}">
+      <h3>${m.title}</h3>
+    `;
+    div.onclick = () => (window.location.href = `manga.html?id=${m.id}`);
+    container.appendChild(div);
+  });
+}
+
+/* ===============================
+   LANGUAGE SYSTEM
+=============================== */
+
+const translations = {
+  th: {
+    mangaList: "รายการมังงะ",
+    searchPlaceholder: "ค้นหามังงะ...",
+    manga: "มังงะ",
+    manhwa: "มันฮวา",
+    manhua: "มันฮัว",
+    hentai: "เฮ็นไท"
+  },
+  en: {
+    mangaList: "Manga List",
+    searchPlaceholder: "Search manga...",
+    manga: "Manga",
+    manhwa: "Manhwa",
+    manhua: "Manhua",
+    hentai: "Hentai"
+  }
+};
+
+// function applyLanguage() {
+//   const t = translations[currentLang];
+
+//   document.querySelector("h2").innerText = t.mangaList;
+//   document.getElementById("searchInput").placeholder = t.searchPlaceholder;
+
+//   document.querySelector("h2:nth-of-type(2)").innerText = t.manga;
+//   document.querySelector("h2:nth-of-type(3)").innerText = t.manhwa;
+//   document.querySelector("h2:nth-of-type(4)").innerText = t.manhua;
+//   document.querySelector("h2:nth-of-type(5)").innerText = t.hentai;
+// }
+
+function applyLanguage() {
+  document.querySelectorAll("[data-th]").forEach(el => {
+    el.innerText = el.dataset[currentLang];
+  });
+
+  document.querySelectorAll("[data-th-placeholder]").forEach(el => {
+    el.placeholder = el.dataset[currentLang + "Placeholder"];
+  });
+}
+
+
+function setLang(lang){
+  currentLang = lang;
+  localStorage.setItem("lang", lang);
+  applyLanguage();
+}
+
+document.addEventListener("DOMContentLoaded", applyLanguage);

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard Iklan</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/MLbig.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="main-header">
+    <nav class="navbar">
+      <div class="nav-container">
+        <ul class="nav-links">
+          <li><a href="admin.html">Dashboard</a></li>
+          <li><a href="admin-manga.html">Manga</a></li>
+          <li><a href="admin-chapter.html">Chapter</a></li>
+          <li><a href="admin-pages.html">Pages</a></li>
+          <li><a href="admin-ads.html" class="active">Ads</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  
+
+  <div class="container">
+    <h2>Tambah Iklan Baru</h2>
+    <button onclick="logout()" style="float:right;background:#ff4d4d;">Logout</button>
+    <form id="adForm">
+      <input type="text" id="title" placeholder="Judul Iklan" required>
+      <input type="text" id="image_url" placeholder="URL Gambar" required>
+      <input type="text" id="target_url" placeholder="URL Tujuan" required>
+
+      <select id="position">
+        <option value="top">Top Banner</option>
+        <option value="sidebar">Sidebar</option>
+        <option value="bottom">Bottom Reader</option>
+      </select>
+
+      <button type="submit">Tambah Iklan</button>
+    </form>
+
+    <h2>Daftar Iklan</h2>
+    <table id="adsTable">
+      <thead>
+        <tr>
+            <th>Judul</th>
+            <th>Posisi</th>
+            <th>Status</th>
+            <th>Views</th>
+            <th>Klik</th>
+            <th>Aksi</th>
+        </tr>
+
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="admin-ads.js"></script>
+</body>
+</html>

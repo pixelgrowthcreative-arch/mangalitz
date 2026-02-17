@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>อ่านมังงะแปลไทยฟรี - MangaLitz เว็บอ่านมังงะอันดับ 1</title>
+
+  <!-- SEO -->
+  <meta name="description" content="อ่านมังงะแปลไทยฟรี อัปเดตทุกวัน มังงะใหม่ล่าสุด อ่านออนไลน์ฟรี ไม่ต้องสมัคร MangaLitz เว็บอ่านมังงะอันดับ 1 ของไทย">
+  <meta name="keywords" content="อ่านมังงะ, มังงะแปลไทย, อ่านการ์ตูนออนไลน์, manga thai, อ่านมังงะฟรี">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- OpenGraph -->
+  <meta property="og:title" content="MangaLitz - อ่านมังงะแปลไทยฟรี">
+  <meta property="og:description" content="อ่านมังงะใหม่ล่าสุดฟรีทุกวัน">
+  <meta property="og:type" content="website">
+  <!-- <meta property="og:image" content="https://yourdomain.com/assets/MLbig.png"> -->
+
+
+  <!-- Icon -->
+  <link rel="icon" type="image/png" href="assets/MLbig2.ico">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Preload logo -->
+  <link rel="preload" as="image" href="assets/mangalitzz.png">
+</head>
+
+<body>
+
+<h1 class="seo-hidden">
+    อ่านมังงะแปลไทยฟรี MangaLitz เว็บอ่านมังงะออนไลน์อันดับ 1
+</h1>
+
+<header class="main-header">
+  <div class="logo-wrapper">
+    <img src="assets/mangalitzz.png" class="logo-icon" alt="MangaLitz Logo">
+  </div>
+
+  <div class="lang-toggle">
+    <button onClick="setLang('th')">TH</button>
+    <button onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<!-- ===================== TOP ADS ===================== -->
+<div class="ads-wrapper">
+  <div id="top-ad-1" class="ad-banner top-ad"></div>
+  <div id="top-ad-2" class="ad-banner top-ad"></div>
+  <div id="top-ad-3" class="ad-banner top-ad"></div>
+  <div id="top-ad-4" class="ad-banner top-ad"></div>
+</div>
+
+<!-- ===================== CONTENT ===================== -->
+<div class="container">
+  <h2>Manga List</h2>
+
+  <input
+    type="text"
+    id="searchInput"
+    data-th-placeholder="ค้นหามังงะ..."
+    data-en-placeholder="Search manga..."
+    oninput="filterManga()"
+    class="search-box"
+  />
+
+  <div id="genre-filters" class="genre-filters"></div>
+  <!-- <div id="manga-list" class="grid"></div> -->
+  <h2 data-th="มังงะ" data-en="Manga">มังงะ</h2>
+  <div id="manga-section" class="grid"></div>
+  
+  <h2 data-th="มันฮวา" data-en="Manhwa">มันฮวา</h2>
+  <div id="manhwa-section" class="grid"></div>
+  
+  <h2 data-th="มันฮัว" data-en="Manhua">มันฮัว</h2>
+  <div id="manhua-section" class="grid"></div>
+  
+  <h2 data-th="เฮ็นไท" data-en="Hentai">เฮ็นไท</h2>
+  <div id="hentai-section" class="grid"></div>
+</div>
+
+<!-- ===================== BOTTOM ADS ===================== -->
+<div class="ads-wrapper">
+  <div id="bottom-ad-1" class="ad-banner bottom-ad"></div>
+  <div id="bottom-ad-2" class="ad-banner bottom-ad"></div>
+  <div id="bottom-ad-3" class="ad-banner bottom-ad"></div>
+  <div id="bottom-ad-4" class="ad-banner bottom-ad"></div>
+</div>
+
+<!-- ===================== JS ===================== -->
+<script src="script.js"></script>
+<script>
+  loadMangaList();
+  loadMultipleAds("top", "top-ad", 4);
+  loadMultipleAds("bottom", "bottom-ad", 4);
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "MangaLitz",
+  "url": "https://yourdomain.com",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://yourdomain.com/?q={search_term}",
+    "query-input": "required name=search_term"
+  }
+}
+</script>
+
+</body>
+</html>
