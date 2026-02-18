@@ -2,12 +2,12 @@ const BASE = window.location.origin;
 const API_CHAPTER = `${BASE}/api/chapters`;
 const API_MANGA = `${BASE}/api/manga`;
 
-if (!localStorage.getItem("token")) {
-  window.location.href = "login.html";
-}
-
 function getToken() {
   return localStorage.getItem("token");
+}
+
+if (!getToken()) {
+  window.location.href = "/login";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -97,5 +97,5 @@ async function deleteChapter(id) {
 
 function logout() {
   localStorage.removeItem("token");
-  window.location.href = "login.html";
+  window.location.href = "/login";
 }

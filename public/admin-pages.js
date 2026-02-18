@@ -13,7 +13,7 @@ function getToken() {
   return localStorage.getItem("token");
 }
 
-if (!getToken()) window.location.href = "login.html";
+if (!getToken()) window.location.href = "/login";
 
 /* ======================
    LOAD MANGA
@@ -145,7 +145,7 @@ async function deletePage(id) {
 
 function logout() {
   localStorage.removeItem("token");
-  window.location.href = "login.html";
+  window.location.href = "/login";
 }
 
 function previewChapter() {

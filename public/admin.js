@@ -1,9 +1,9 @@
 const token = localStorage.getItem("token");
-if (!token) location.href = "login.html";
+if (!token) location.href = "/login";
 
 function logout() {
   localStorage.removeItem("token");
-  location.href = "login.html";
+  location.href = "/login";
 }
 
 const view = document.getElementById("admin-view");
@@ -45,4 +45,4 @@ buttons.forEach(btn => {
 });
 
 // default
-loadAdminPage("admin-inti.html");
+loadAdminPage("/admin");

@@ -1,12 +1,12 @@
-const API_ADMIN = `${window.location.origin}/api/ads`;
-
-
-if (!localStorage.getItem("token")) {
-  window.location.href = "login.html";
-}
+const API_BASE = window.location.origin;
+const API_ADMIN = `${API_BASE}/api/ads`;
 
 function getToken() {
   return localStorage.getItem("token");
+}
+
+if (!getToken()) {
+  window.location.href = "/login";
 }
 
 async function loadAds() {
@@ -14,8 +14,10 @@ async function loadAds() {
     headers: { Authorization: `Bearer ${getToken()}` }
   });
 
-  if (!res.ok) {
-    alert("Unauthorized! Login sebagai admin dulu.");
+  if (res.status === 401) {
+    alert("Session habis, login ulang.");
+    localStorage.removeItem("token");
+    window.location.href = "/login";
     return;
   }
 
@@ -53,10 +55,10 @@ document.getElementById("adForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const ad = {
-    title: title.value,
-    image_url: image_url.value,
-    target_url: target_url.value,
-    position: position.value
+    title: document.getElementById("title").value,
+    image_url: document.getElementById("image_url").value,
+    target_url: document.getElementById("target_url").value,
+    position: document.getElementById("position").value
   };
 
   await fetch(API_ADMIN, {
@@ -72,8 +74,6 @@ document.getElementById("adForm").addEventListener("submit", async (e) => {
   loadAds();
 });
 
-loadAds();
-
 async function deleteAd(id) {
   if (!confirm("Yakin mau hapus iklan ini?")) return;
 
@@ -87,6 +87,7 @@ async function deleteAd(id) {
 
 function logout() {
   localStorage.removeItem("token");
-  window.location.href = "login.html";
+  window.location.href = "/login";
 }
 
+loadAds();

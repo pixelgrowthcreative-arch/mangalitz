@@ -3,7 +3,7 @@ const API_MANGA = `${BASE}/api/manga`;
 const API_GENRES = `${BASE}/api/genres`;
 
 if (!localStorage.getItem("token")) {
-  window.location.href = "login.html";
+  window.location.href = "/login";
 }
 
 function getToken() {
@@ -49,10 +49,11 @@ document.getElementById("mangaForm").addEventListener("submit", async (e) => {
 
   const formData = new FormData();
 
-  formData.append("title", title.value);
-  formData.append("slug", slug.value);
-  formData.append("description", description.value);
-  formData.append("age_rating", age_rating.value);
+  formData.append("title", document.getElementById("title").value);
+  formData.append("slug", document.getElementById("slug").value);
+  formData.append("description", document.getElementById("description").value);
+  formData.append("age_rating", document.getElementById("age_rating").value);
+
 
   // 🔥 FILE COVER (INI KUNCI)
   const coverFile = document.getElementById("cover").files[0];
@@ -82,7 +83,7 @@ document.getElementById("mangaForm").addEventListener("submit", async (e) => {
 
 function logout() {
   localStorage.removeItem("token");
-  window.location.href = "login.html";
+  window.location.href = "/login";
 }
 
 loadMyManga();
