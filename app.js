@@ -10,6 +10,20 @@ app.use(express.urlencoded({ extended: true }));
 const publicRoutes = require("./routes/public");
 app.use("/api/public", publicRoutes);
 
+app.use((req, res, next) => {
+  if (
+    !req.path.startsWith("/api") &&
+    !req.path.startsWith("/uploads") &&
+    !req.path.includes(".")
+  ) {
+    const filePath = path.join(__dirname, "public", req.path + ".html");
+    return res.sendFile(filePath, err => {
+      if (err) next();
+    });
+  }
+  next();
+});
+
 const path = require("path");
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -42,3 +56,4 @@ app.listen(PORT, () => {
 app.get("/health", (req, res) => {
   res.send("OK");
 });
+
