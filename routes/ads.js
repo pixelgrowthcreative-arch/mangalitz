@@ -14,7 +14,7 @@ router.post("/", auth, async (req, res) => {
   const { title, image_url, target_url, position } = req.body;
 
   await db.query(
-    "INSERT INTO ads (title, image_url, target_url, position) VALUES (?, ?, ?, ?)",
+    "INSERT INTO ads (title, image_url, target_url, position) VALUES ($1, $2, $3, $4)",
     [title, image_url, target_url, position]
   );
 
@@ -24,18 +24,17 @@ router.post("/", auth, async (req, res) => {
 // PATCH aktif/nonaktif
 router.patch("/:id/toggle", auth, async (req, res) => {
   await db.query(
-    "UPDATE ads SET is_active = NOT is_active WHERE id = ?",
+    "UPDATE ads SET is_active = NOT is_active WHERE id = $1",
     [req.params.id]
   );
 
   res.json({ message: "Status iklan diubah" });
 });
 
-module.exports = router;
-
 // DELETE iklan
 router.delete("/:id", auth, async (req, res) => {
-  await db.query("DELETE FROM ads WHERE id = ?", [req.params.id]);
+  await db.query("DELETE FROM ads WHERE id = $1", [req.params.id]);
   res.json({ message: "Iklan dihapus" });
 });
 
+module.exports = router;

@@ -39,7 +39,7 @@ router.post("/", auth, async (req, res) => {
   }
 
   const [manga] = await db.query(
-    "SELECT id FROM manga WHERE id = ?",
+    "SELECT id FROM manga WHERE id = $1",
     [manga_id]
   );
 
@@ -48,8 +48,8 @@ router.post("/", auth, async (req, res) => {
   }
 
   await db.query(
-    "INSERT INTO chapters (manga_id, chapter_number, title, sort_order) VALUES (?, ?, ?, ?)",
-    [manga_id, chapter_number, title || null, chapter_number]
+  "INSERT INTO chapters (manga_id, chapter_number, title, sort_order) VALUES ($1, $2, $3, $4)",
+  [manga_id, chapter_number, title || null, chapter_number]
   );
 
   res.json({ message: "Chapter berhasil dibuat" });
@@ -62,7 +62,7 @@ router.post("/", auth, async (req, res) => {
  */
 router.get("/manga/:mangaId", async (req, res) => {
   const [rows] = await db.query(
-    "SELECT id, chapter_number, title FROM chapters WHERE manga_id = ? ORDER BY sort_order ASC",
+    "SELECT id, chapter_number, title FROM chapters WHERE manga_id = $1 ORDER BY sort_order ASC",
     [req.params.mangaId]
   );
   res.json(rows);
@@ -78,7 +78,7 @@ router.delete("/:id", auth, async (req, res) => {
     const chapterId = req.params.id;
 
     const [pages] = await db.query(
-      "SELECT image_url FROM pages WHERE chapter_id = ?",
+      "SELECT image_url FROM pages WHERE chapter_id = $1",
       [chapterId]
     );
 
@@ -87,7 +87,7 @@ router.delete("/:id", auth, async (req, res) => {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     });
 
-    await db.query("DELETE FROM chapters WHERE id = ?", [chapterId]);
+    await db.query("DELETE FROM chapters WHERE id = $1", [chapterId]);
 
     res.json({ message: "Chapter & halaman berhasil dihapus" });
   } catch (err) {
@@ -104,12 +104,15 @@ router.delete("/:id", auth, async (req, res) => {
 router.post("/reorder", auth, async (req, res) => {
   const orders = req.body;
 
-  for (const o of orders) {
-    await db.query(
-      "UPDATE chapters SET sort_order = ? WHERE id = ?",
+  await Promise.all(
+  orders.map(o =>
+    db.query(
+      "UPDATE chapters SET sort_order = $1 WHERE id = $2",
       [o.order, o.id]
-    );
-  }
+    )
+  )
+);
+
 
   res.json({ message: "Urutan chapter diperbarui" });
 });

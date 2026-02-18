@@ -6,29 +6,6 @@ const upload = require("../config/upload");
 const fs = require("fs");
 const path = require("path");
 
-// /* =========================
-//    UPLOAD HALAMAN
-// ========================= */
-// router.post("/", auth, upload.single("image"), async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ error: "File tidak diterima server" });
-//     }
-
-//     const { chapter_id, page_order } = req.body;
-//     const imageUrl = `/uploads/pages/${req.file.filename}`;
-
-//     await db.query(
-//       "INSERT INTO pages (chapter_id, image_url, page_order) VALUES (?, ?, ?)",
-//       [chapter_id, imageUrl, page_order]
-//     );
-
-//     res.json({ message: "Halaman berhasil diupload", imageUrl });
-//   } catch (err) {
-//     console.error("UPLOAD ERROR:", err);
-//     res.status(500).json({ error: "Upload gagal" });
-//   }
-// });
 
 /* =========================
    REORDER PAGES
@@ -40,19 +17,22 @@ router.post("/reorder", auth, async (req, res) => {
     const orders = req.body; // [{id, order}]
     console.log("REORDER REQ BODY:", req.body);
 
-    for (const o of orders) {
-      await db.query(
-        "UPDATE pages SET page_order = ? WHERE id = ?",
+    await Promise.all(
+      orders.map(o =>
+      db.query(
+        "UPDATE pages SET page_order = $1 WHERE id = $2",
         [o.order, o.id]
-      );
-    }
+        )
+      )
+    );
+
 
     res.json({ message: "Urutan halaman diperbarui" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Gagal reorder halaman" });
-  }
-});
+      } catch (err) {
+        console.error(err);
+       res.status(500).json({ error: "Gagal reorder halaman" });
+      }
+    });
 
 /* =========================
    DELETE PAGE
@@ -61,7 +41,7 @@ router.delete("/:id", auth, async (req, res) => {
   const pageId = req.params.id;
 
   const [rows] = await db.query(
-    "SELECT image_url FROM pages WHERE id = ?",
+    "SELECT image_url FROM pages WHERE id = $1",
     [pageId]
   );
 
@@ -70,9 +50,14 @@ router.delete("/:id", auth, async (req, res) => {
   }
 
   const filePath = path.join(__dirname, "..", rows[0].image_url);
-  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  try {
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  } catch (e) {
+      console.warn("File delete gagal:", filePath);
+  }
 
-  await db.query("DELETE FROM pages WHERE id = ?", [pageId]);
+
+  await db.query("DELETE FROM pages WHERE id = $1", [pageId]);
 
   res.json({ message: "Page berhasil dihapus" });
 });
@@ -82,7 +67,7 @@ router.delete("/:id", auth, async (req, res) => {
 router.get("/admin/chapter/:chapterId", auth, async (req, res) => {
   try {
     const [pages] = await db.query(
-      "SELECT image_url, page_order FROM pages WHERE chapter_id = ? ORDER BY page_order ASC",
+      "SELECT image_url, page_order FROM pages WHERE chapter_id = $1 ORDER BY page_order ASC",
       [req.params.chapterId]
     );
 
@@ -99,7 +84,7 @@ router.get("/admin/chapter/:chapterId", auth, async (req, res) => {
 ========================= */
 router.get("/chapter/:chapterId", async (req, res) => {
   const [rows] = await db.query(
-    "SELECT * FROM pages WHERE chapter_id = ? ORDER BY page_order ASC",
+    "SELECT * FROM pages WHERE chapter_id = $1 ORDER BY page_order ASC",
     [req.params.chapterId]
   );
   res.json(rows);
@@ -128,15 +113,20 @@ router.post("/", auth, uploadPages.single("image"), async (req, res) => {
 
     fs.mkdirSync(chapterDir, { recursive: true });
 
-    const newPath = path.join(chapterDir, req.file.originalname);
+    const ext = path.extname(req.file.originalname);
+    const safeName =
+      Date.now() + "_" + Math.random().toString(36).slice(2, 7) + ext;
+
+    const newPath = path.join(chapterDir, safeName);
+
 
     fs.renameSync(req.file.path, newPath);
 
     const imageUrl = `/${newPath.replace(/\\/g, "/")}`;
 
     await db.query(
-      "INSERT INTO pages (chapter_id, image_url, page_order) VALUES (?, ?, ?)",
-      [chapter_id, imageUrl, page_order]
+    "INSERT INTO pages (chapter_id, image_url, page_order) VALUES ($1, $2, $3)",
+    [chapter_id, imageUrl, page_order]
     );
 
     res.json({ message: "Page uploaded", imageUrl });

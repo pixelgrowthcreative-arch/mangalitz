@@ -38,3 +38,7 @@ app.use("/api/chapters", chapterRoutes);
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+
+app.get("/health", (req, res) => {
+  res.send("OK");
+});

@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
-  const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
+  const [rows] = await db.query("SELECT * FROM users WHERE username = $1", [username]);
   if (rows.length === 0) return res.status(401).json({ error: "User tidak ditemukan" });
 
   const user = rows[0];
@@ -17,7 +17,7 @@ router.post("/login", async (req, res) => {
 
   const token = jwt.sign(
     { id: user.id, role: user.role },
-    "SECRETKEY123",   // nanti pindah ke .env
+    process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 

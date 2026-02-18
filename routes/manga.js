@@ -18,19 +18,22 @@ router.post("/", auth, uploadCover.single("cover"), async (req, res) => {
     }
 
     // 1. insert manga dulu
-    const [result] = await db.query(
-      "INSERT INTO manga (title, slug, description, age_rating, user_id, status) VALUES (?, ?, ?, ?, ?, 'pending')",
+    const [rows] = await db.query(
+      `INSERT INTO manga (title, slug, description, age_rating, user_id, status)
+      VALUES ($1, $2, $3, $4, $5, 'pending')
+      RETURNING id`,
       [title, slug, description, age_rating, req.user.id]
     );
 
-    const mangaId = result.insertId;
+    const mangaId = rows[0].id;
+
 
     if (genres && genres.length){
       const genreArray = Array.isArray(genres) ? genres : [genres];
 
       for (const genreId of genreArray){
         await db.query(
-          "INSERT INTO manga_genres (manga_id, genre_id) VALUES (?, ?)",
+          "INSERT INTO manga_genres (manga_id, genre_id) VALUES ($1, $2)",
           [mangaId, genreId]
         )
       }
@@ -50,7 +53,7 @@ router.post("/", auth, uploadCover.single("cover"), async (req, res) => {
 
     // 4. simpan path cover ke DB
     await db.query(
-      "UPDATE manga SET cover_image = ? WHERE id = ?",
+      "UPDATE manga SET cover_image = $1 WHERE id = $2",
       [`/${finalCoverPath.replace(/\\/g, "/")}`, mangaId]
     );
 
@@ -66,7 +69,7 @@ router.post("/", auth, uploadCover.single("cover"), async (req, res) => {
 ========================= */
 router.get("/my", auth, async (req, res) => {
   const [rows] = await db.query(
-    "SELECT id, title, status, created_at FROM manga WHERE user_id = ? ORDER BY created_at DESC",
+    "SELECT id, title, status, created_at FROM manga WHERE user_id = $1 ORDER BY created_at DESC",
     [req.user.id]
   );
   res.json(rows);
@@ -86,14 +89,14 @@ router.get("/all", auth, async (req, res) => {
    APPROVE / REJECT
 ========================= */
 router.patch("/:id/approve", auth, async (req, res) => {
-  await db.query("UPDATE manga SET status = 'approved' WHERE id = ?", [
+  await db.query("UPDATE manga SET status = 'approved' WHERE id = $1", [
     req.params.id
   ]);
   res.json({ message: "Manga approved" });
 });
 
 router.patch("/:id/reject", auth, async (req, res) => {
-  await db.query("UPDATE manga SET status = 'rejected' WHERE id = ?", [
+  await db.query("UPDATE manga SET status = 'rejected' WHERE id = $1", [
     req.params.id
   ]);
   res.json({ message: "Manga rejected" });
@@ -107,7 +110,7 @@ router.delete("/:id", auth, async (req, res) => {
     const mangaId = req.params.id;
 
     // hapus dari DB (chapters & pages ikut via FK cascade)
-    await db.query("DELETE FROM manga WHERE id = ?", [mangaId]);
+    await db.query("DELETE FROM manga WHERE id = $1", [mangaId]);
 
     // hapus semua file manga
     const mangaDir = path.join("uploads", `manga_${mangaId}`);
@@ -154,7 +157,7 @@ router.get("/", async (req, res) => {
   let params = [];
 
   if (status) {
-    sql += " WHERE status = ?";
+    sql += " WHERE status = $1";
     params.push(status);
   }
 
