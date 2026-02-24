@@ -21,5 +21,5 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   }
 
   localStorage.setItem("token", data.token);
-  window.location.href = "admin.html";
+  window.location.href = "/admin";
 });

@@ -23,9 +23,11 @@ let activeGenre = null;
 
 async function loadMangaList() {
   const res = await fetch(`${API}/manga`);
-  allManga = await res.json();
-  renderGenreFilters();
-  //renderManga(allManga);
+  const data = await res.json();
+
+  // 🔞 only adult
+  allManga = data.filter(m => m.is_adult === true);
+
   renderSection(allManga);
 }
 
@@ -247,12 +249,22 @@ async function loadGenreSection(genreName, containerId) {
 }
 
 function renderSection(mangaArray){
-  renderGenreSection("Manga", "manga-section", mangaArray);
-  renderGenreSection("Manhwa", "manhwa-section", mangaArray);
-  renderGenreSection("Manhua", "manhua-section", mangaArray);
-  renderGenreSection("Hentai", "hentai-section", mangaArray);
-}
+  const container = document.getElementById("hentai-section");
+  if (!container) return;
 
+  container.innerHTML = "";
+
+  mangaArray.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "manga-card";
+    div.innerHTML = `
+      <img src="${BASE_URL}${m.cover_image}">
+      <h3>${m.title}</h3>
+    `;
+    div.onclick = () => (window.location.href = `manga.html?id=${m.id}`);
+    container.appendChild(div);
+  });
+}
 
 function renderGenreSection(genreName, containerId, sourceData = allManga) {
   const container = document.getElementById(containerId);
@@ -299,17 +311,6 @@ const translations = {
   }
 };
 
-// function applyLanguage() {
-//   const t = translations[currentLang];
-
-//   document.querySelector("h2").innerText = t.mangaList;
-//   document.getElementById("searchInput").placeholder = t.searchPlaceholder;
-
-//   document.querySelector("h2:nth-of-type(2)").innerText = t.manga;
-//   document.querySelector("h2:nth-of-type(3)").innerText = t.manhwa;
-//   document.querySelector("h2:nth-of-type(4)").innerText = t.manhua;
-//   document.querySelector("h2:nth-of-type(5)").innerText = t.hentai;
-// }
 
 function applyLanguage() {
   document.querySelectorAll("[data-th]").forEach(el => {
