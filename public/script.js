@@ -10,6 +10,10 @@ const BASE =
 const API = `${BASE}/api/public`;
 const BASE_URL = BASE;
 
+function fixCover(url) {
+  if (!url) return "";
+  return url.startsWith("http") ? url : BASE_URL + url;
+}
 
 function getParam(name) {
   return new URLSearchParams(window.location.search).get(name);
@@ -89,7 +93,7 @@ async function loadMangaDetail() {
   }
 
   // ===== HERO COVER =====
-  const coverUrl = `${BASE_URL}${data.cover_image}`;
+  const coverUrl = fixCover(data.cover_image);
   const hero = document.getElementById("hero");
   const cover = document.getElementById("cover");
 
@@ -142,7 +146,7 @@ async function loadReader() {
 
   pages.forEach(p => {
     const img = document.createElement("img");
-    img.src = `${BASE_URL}${p.image_url}`;
+    img.src = fixCover(p.image_url);
     img.alt = `manga page ${p.page_order}`;
     container.appendChild(img);
   });
@@ -246,7 +250,7 @@ async function loadGenreSection(genreName, containerId) {
     const div = document.createElement("div");
     div.className = "manga-card";
     div.innerHTML = `
-      <img src="${BASE_URL}${m.cover_image}">
+      <img src="${fixCover(m.cover_image)}">
       <h3>${m.title}</h3>
     `;
     div.onclick = () => (window.location.href = `manga.html?id=${m.id}`);
@@ -264,7 +268,7 @@ function renderSection(mangaArray){
     const div = document.createElement("div");
     div.className = "manga-card";
     div.innerHTML = `
-      <img src="${BASE_URL}${m.cover_image}">
+      <img src="${fixCover(m.cover_image)}">
       <h3>${m.title}</h3>
     `;
     div.onclick = () => (window.location.href = `manga.html?id=${m.id}`);
@@ -286,7 +290,7 @@ function renderGenreSection(genreName, containerId, sourceData = allManga) {
     const div = document.createElement("div");
     div.className = "manga-card";
     div.innerHTML = `
-      <img src="${BASE_URL}${m.cover_image}">
+      <img src="${m.cover_image.startsWith('http') ? m.cover_image : BASE_URL + m.cover_image}">
       <h3>${m.title}</h3>
     `;
     div.onclick = () => (window.location.href = `manga.html?id=${m.id}`);
