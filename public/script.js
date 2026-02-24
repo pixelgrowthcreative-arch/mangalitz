@@ -25,12 +25,18 @@ async function loadMangaList() {
   const res = await fetch(`${API}/manga`);
   const data = await res.json();
 
-  // 🔞 only adult
-  allManga = data.filter(m => m.is_adult === true);
+  // 🔞 only 18+
+  allManga = data.filter(m => {
+    if (!m.genres) return false;
+    return m.genres
+      .split(",")
+      .map(g => g.trim())
+      .includes("18+");
+  });
 
+  renderGenreFilters();
   renderSection(allManga);
 }
-
 function renderManga(mangaArray) {
   const container = document.getElementById("manga-list");
   if (!container) return;
