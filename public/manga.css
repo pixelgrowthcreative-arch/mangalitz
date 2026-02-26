@@ -1,0 +1,119 @@
+/* RESET */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Inter,sans-serif;
+}
+
+body{
+  background: radial-gradient(circle at top,#141722,#0b0d12);
+  color:#fff;
+}
+
+/* HEADER */
+.main-header{
+  backdrop-filter:blur(14px);
+  background:rgba(15,18,28,.85);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.header-inner{
+  max-width:1100px;
+  margin:auto;
+  padding:14px 18px;
+}
+
+.logo{
+  height:58px;
+}
+
+/* ADS */
+.ad-banner{
+  max-width:1100px;
+  height:90px;
+  margin:20px auto;
+  background:#151826;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  color:#777;
+}
+
+/* HERO */
+.manga-hero{
+  position:relative;
+  padding:60px 20px;
+  background:linear-gradient(180deg,#0f1320,#0b0d12);
+}
+
+.hero-overlay{
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at center,rgba(255,60,127,.15),transparent 60%);
+}
+
+.hero-content{
+  position:relative;
+  max-width:1100px;
+  margin:auto;
+  display:flex;
+  gap:30px;
+  align-items:center;
+}
+
+.hero-cover{
+  width:220px;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);
+}
+
+.hero-info h1{
+  font-size:26px;
+  margin-bottom:10px;
+}
+
+.hero-info p{
+  color:#aaa;
+  line-height:1.6;
+}
+
+/* CHAPTER LIST */
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.chapter-list{
+  list-style:none;
+}
+
+.chapter-list li{
+  background:#151826;
+  padding:12px 14px;
+  border-radius:8px;
+  margin-bottom:8px;
+  transition:.2s;
+}
+
+.chapter-list li:hover{
+  background:#1c2030;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  .hero-content{
+    flex-direction:column;
+    text-align:center;
+  }
+
+  .hero-cover{
+    width:180px;
+  }
+
+  .hero-info h1{
+    font-size:22px;
+  }
+}

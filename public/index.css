@@ -1,0 +1,275 @@
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+body {
+  background: radial-gradient(circle at top, #141722, #0b0d12);
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* ================= HEADER ================= */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  background: rgba(15, 18, 28, 0.85);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: auto;
+  padding: 14px 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ================= LOGO ================= */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.logo img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+}
+
+.logo span {
+  font-weight: 700;
+  font-size: 20px;
+}
+
+/* ================= SEARCH ================= */
+.search {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #1c2030;
+  color: white;
+}
+
+.search:focus {
+  outline: none;
+  border-color: rgba(255,60,127,.6);
+  box-shadow: 0 0 0 3px rgba(255,60,127,.15);
+}
+
+/* ================= LANG ================= */
+.lang button {
+  background: #1c2030;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.lang button:hover {
+  background: linear-gradient(45deg,#ff3c7f,#ff7a3c);
+  color: white;
+}
+
+/* ================= ADS ================= */
+.ads {
+  max-width: 1100px;
+  margin: 20px auto;
+  height: 90px;
+  background: #151826;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  border-radius: 10px;
+}
+
+/* ================= LAYOUT ================= */
+.layout {
+  max-width: 1400px;
+  margin: auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 120px 1fr 120px;
+  gap: 20px;
+}
+
+/* SIDE ADS */
+.side {
+  background: #151826;
+  height: 600px;
+  border-radius: 10px;
+  position: sticky;
+  top: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+}
+
+.content {
+  width: 100%;
+}
+
+/* ================= HERO ================= */
+.hero {
+  background: linear-gradient(135deg,#0f1320,#151826);
+  border-radius: 14px;
+  padding: 32px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.hero-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero h1 {
+  font-size: 24px;
+}
+
+.hero-sub {
+  margin-top: 8px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.badge {
+  background: linear-gradient(45deg,#ff3c7f,#ff7a3c);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* ================= GRID ================= */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(170px,1fr));
+  gap: 20px;
+}
+
+/* CARD */
+.card {
+  background: #151826;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: .25s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 18px rgba(255,60,127,.25);
+}
+
+.card img {
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+}
+
+.card .info {
+  padding: 10px;
+  font-size: 14px;
+}
+
+/* ================= SKELETON ================= */
+.skeleton .card {
+  background: linear-gradient(90deg,#1a1d2b,#202436,#1a1d2b);
+  background-size: 200% 100%;
+  animation: loading 1.2s infinite;
+}
+
+@keyframes loading {
+  0% {background-position: 200% 0}
+  100% {background-position: -200% 0}
+}
+
+/* ================= FOOTER ================= */
+.footer {
+  text-align: center;
+  padding: 25px;
+  color: #777;
+  font-size: 13px;
+}
+
+/* ================= TABLET ================= */
+@media(max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .side {
+    display: none;
+  }
+}
+
+/* ================= MOBILE ================= */
+@media(max-width: 768px) {
+
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .logo img {
+    height: 46px;
+    max-height: 46px;
+  }
+
+  .logo span {
+    font-size: 18px;
+  }
+
+  .search {
+    order: 3;
+    width: 100%;
+    padding: 9px 12px;
+  }
+
+  .hero {
+    padding: 24px;
+  }
+
+  .hero h1 {
+    font-size: 20px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill,minmax(140px,1fr));
+    gap: 14px;
+  }
+
+  .card img {
+    height: 200px;
+  }
+}
+
+/* EXTRA SMALL */
+@media(max-width: 480px) {
+  .logo span {
+    display: none;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2,1fr);
+  }
+
+  .card img {
+    height: 180px;
+  }
+}
