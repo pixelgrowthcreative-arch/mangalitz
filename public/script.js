@@ -11,8 +11,11 @@ const API = `${BASE}/api/public`;
 const BASE_URL = BASE;
 
 function fixCover(url) {
-  if (!url) return "";
-  return url.startsWith("http") ? url : BASE_URL + url;
+  if (!url) return "assets/no-cover.jpg";
+
+  if (url.startsWith("http")) return url;
+
+  return BASE_URL + url;
 }
 
 function getParam(name) {
@@ -26,23 +29,27 @@ let allManga = [];
 let activeGenre = null;
 
 async function loadMangaList() {
-  const res = await fetch(`${API}/manga`);
-  const data = await res.json();
+  const container = document.getElementById("hentai-section");
 
-  // 🔞 only 18+
-  allManga = data.filter(m => {
-    if (!m.genres) return false;
-    return m.genres
-      .split(",")
-      .map(g => g.trim())
-      .includes("18+");
-  });
+  try {
+    const res = await fetch(API + "/manga");
+    const data = await res.json();
 
-  renderGenreFilters();
-  renderSection(allManga);
+    // 🔞 FILTER 18+
+    allManga = data.filter(m =>
+      m.genres?.includes("18+")
+    );
+
+    renderManga(allManga);
+
+  } catch (err) {
+    console.error("LOAD ERROR:", err);
+    container.innerHTML = "Failed load manga";
+  }
 }
+
 function renderManga(mangaArray) {
-  const container = document.getElementById("manga-list");
+  const container = document.getElementById("hentai-section");
   if (!container) return;
 
   container.innerHTML = "";
@@ -50,14 +57,16 @@ function renderManga(mangaArray) {
   mangaArray.forEach(m => {
     const div = document.createElement("div");
     div.className = "manga-card";
+
     div.innerHTML = `
-      <img src="${BASE_URL}${m.cover_image}" alt="${m.title} อ่านมังงะแปลไทยฟรี" />
+      <img 
+        src="${fixCover(m.cover_image)}"
+        onerror="this.src='assets/no-cover.jpg'"
+        loading="lazy"
+      />
       <h3>${m.title}</h3>
-      <p style="font-size:12px;opacity:.7">👁 ${m.views || 0} views</p>
-      <p style="font-size:12px;color:#aaa">
-        ${(m.genres || '').replace(/,/g, ' • ')}
-      </p>
     `;
+
     div.onclick = () => (window.location.href = `manga.html?id=${m.id}`);
     container.appendChild(div);
   });
