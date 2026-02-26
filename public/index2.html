@@ -83,55 +83,8 @@
 </footer>
 
 <script src="script.js"></script>
-
 <script>
-const BASE =
-  location.hostname === "localhost"
-    ? "http://localhost:3000"
-    : location.origin;
-
-const API = BASE + "/api/public/manga";
-
-async function loadMangaList() {
-  const container = document.getElementById("hentai-section");
-
-  try {
-    const res = await fetch(API);
-    const data = await res.json();
-
-    // 🔞 filter 18+
-    const mangas = data.filter(m =>
-      m.genres?.includes("18+")
-    );
-
-    container.classList.remove("skeleton");
-    container.innerHTML = "";
-
-    mangas.forEach(manga => {
-      const img =
-        manga.cover_image?.startsWith("http")
-          ? manga.cover_image
-          : BASE + manga.cover_image;
-
-      container.innerHTML += `
-        <div class="card">
-          <img 
-            src="${img}" 
-            loading="lazy"
-            onerror="this.src='assets/no-cover.jpg'"
-          >
-          <div class="info">${manga.title}</div>
-        </div>
-      `;
-    });
-
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = "Failed load manga";
-  }
-}
-
-loadMangaList();
+  loadMangaList();
 </script>
 
 </body>
