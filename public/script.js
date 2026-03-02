@@ -190,10 +190,19 @@ function renderGenreFilters() {
   container.innerHTML = "";
 
   const genresSet = new Set();
+
   allManga.forEach(m => {
-    if (m.genres) m.genres.split(",").forEach(g => genresSet.add(g));
+    if (!m.genres) return;
+
+    // support array OR string
+    const genres = Array.isArray(m.genres)
+      ? m.genres
+      : m.genres.split(",");
+
+    genres.forEach(g => genresSet.add(g.trim()));
   });
 
+  // tombol ALL
   const reset = document.createElement("span");
   reset.className = "genre-btn active";
   reset.innerText = "All";
