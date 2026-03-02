@@ -2,10 +2,7 @@
    GLOBAL CONFIG
 =============================== */
 // pakai config global
-const BASE =
-  window.location.port === "5500"
-    ? "http://localhost:3000"
-    : window.location.origin;
+const BASE = "https://mangalitz-api.onrender.com";
 
 const API = `${BASE}/api/public`;
 const BASE_URL = BASE;
@@ -27,6 +24,7 @@ function getParam(name) {
 =============================== */
 let allManga = [];
 let activeGenre = null;
+let currentLang = localStorage.getItem("lang") || "th";
 
 async function loadMangaList() {
   const container = document.getElementById("hentai-section");
@@ -35,12 +33,15 @@ async function loadMangaList() {
     const res = await fetch(API + "/manga");
     const data = await res.json();
 
-    // 🔞 FILTER 18+
-    allManga = data.filter(m =>
-      m.genres?.includes("18+")
-    );
+    allManga = data.map(m => ({
+      ...m,
+      genres: Array.isArray(m.genres)
+        ? m.genres
+        : (m.genres || "").split(",")
+    })).filter(m => m.genres.includes("18+"));
 
     renderManga(allManga);
+    renderGenreFilters();
 
   } catch (err) {
     console.error("LOAD ERROR:", err);
