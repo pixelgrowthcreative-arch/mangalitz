@@ -2,7 +2,7 @@
    GLOBAL CONFIG
 =============================== */
 // pakai config global
-const BASE = "https://mangalitz-api.onrender.com";
+const BASE = "https://mangalitz.onrender.com";
 
 const API = `${BASE}/api/public`;
 const BASE_URL = BASE;
