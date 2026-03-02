@@ -9,7 +9,7 @@ const pool = new Pool({
 module.exports = {
   query: async (text, params) => {
     const result = await pool.query(text, params);
-    return result; // ⬅️ langsung return result
+    return result; //langsung return result
   }
 };
 

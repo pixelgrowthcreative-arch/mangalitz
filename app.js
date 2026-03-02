@@ -24,6 +24,9 @@ app.use("/manga", express.static(path.join(__dirname, "public/manga"), {
   etag: true
 }));
 
+const adminRoutes = require("./routes/admin");
+app.use("/api/admin", adminRoutes);
+
 // uploads manual
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -52,5 +55,5 @@ app.get("/health", (_, res) => res.send("OK"));
 
 /* ================= START SERVER ================= */
 app.listen(PORT, () => {
-  console.log("🚀 Server running on port", PORT);
+  console.log(" Server running on port", PORT);
 });
