@@ -1,72 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-  <title>MangaLitz</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/MLbig.png">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title id="page-title">MangaLitz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="icon" type="image/png" href="assets/MLbig.png">
+  <link rel="stylesheet" href="manga.css">
 </head>
+
 <body>
-  <header class="main-header">
-    <div class="logo-wrapper">
-      <img src="assets/mangalitzz.png" class="logo-icon">
-    </div>
-  </header>
-  
-    <div id="top-ad-1" class="ad-banner top-ad">
-        IKLAN BANNER 728x90
-    </div>
 
-    <div id="top-ad-2" class="ad-banner top-ad">
-        IKLAN BANNER 728x90
-    </div>
+<!-- HEADER -->
+<header class="main-header">
+  <div class="header-inner">
+    <img src="assets/mangalitzz.png" class="logo">
+  </div>
+</header>
 
-    <div id="top-ad-3" class="ad-banner top-ad">
-        IKLAN BANNER 728x90
-    </div>    
+<!-- TOP ADS -->
+<div class="ad-banner">TOP ADS</div>
 
-    <div id="top-ad-4" class="ad-banner top-ad">
-        IKLAN BANNER 728x90
-    </div>
+<!-- HERO -->
+<section class="manga-hero" id="hero">
+  <div class="hero-overlay"></div>
 
-    <div class="manga-hero" id="hero">
-      <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <img id="cover" class="hero-cover">
 
-      <div class="hero-content">
-        <img id="cover" class="hero-cover" />
-        <div class="hero-info">
-        <h1 id="title"></h1>
-        <p id="description"></p>
-      </div>
+    <div class="hero-info">
+      <h1 id="title">Loading...</h1>
+      <p id="description"></p>
     </div>
   </div>
+</section>
 
-  <div class="container">
-    <h2>Chapters</h2>
-    <ul id="chapter-list"></ul>
-  </div>
+<!-- CHAPTER LIST -->
+<div class="container">
+  <h2>Chapters</h2>
+  <ul id="chapter-list" class="chapter-list"></ul>
+</div>
 
-    <div id="bottom-ad-1" class="ad-banner bottom-ad">
-        IKLAN BANNER 728x90
-    </div>
+<!-- BOTTOM ADS -->
+<div class="ad-banner">BOTTOM ADS</div>
 
-    <div id="bottom-ad-2" class="ad-banner bottom-ad">
-        IKLAN BANNER 728x90
-    </div>
+<script src="script.js"></script>
+<script>loadMangaDetail();</script>
 
-    <div id="bottom-ad-3" class="ad-banner bottom-ad">
-        IKLAN BANNER 728x90
-    </div>
-
-    <div id="bottom-ad-4" class="ad-banner bottom-ad">
-        IKLAN BANNER 728x90
-    </div>
-
-  <script src="script.js"></script>
-  <script>loadMangaDetail();</script>
-   <script>
-      loadMultipleAds("top", "top-ad", 4);
-      loadMultipleAds("bottom", "bottom-ad", 4);
-  </script>
 </body>
-
 </html>

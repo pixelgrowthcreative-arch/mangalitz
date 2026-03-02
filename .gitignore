@@ -1,4 +1,6 @@
 .env*
 node_modules
 uploads
-scrapper
+debug.html
+public/manga/*
+*.log

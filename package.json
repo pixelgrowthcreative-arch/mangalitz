@@ -5,7 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "scrape": "node jobs/scraper.js"
+    
   },
   "keywords": [],
   "author": "",
@@ -15,12 +17,15 @@
     "axios": "^1.13.5",
     "bcrypt": "^6.0.0",
     "cheerio": "^1.2.0",
+    "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
-    "pg": "^8.18.0",
+    "pg": "^8.19.0",
+    "puppeteer": "^24.37.5",
+    "sharp": "^0.34.5",
     "slugify": "^1.6.6"
   },
   "devDependencies": {

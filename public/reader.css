@@ -65,6 +65,13 @@ body{
   transition:.2s;
 }
 
+.reader img {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 10px;
+}
+
 /* MOBILE */
 @media(max-width:768px){
 

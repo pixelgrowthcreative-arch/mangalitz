@@ -1,59 +1,56 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
+const compression = require("compression")
+
 const app = express();
-require("dotenv").config();
 const PORT = process.env.PORT || 3000;
 
+/* ================= MIDDLEWARE ================= */
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const publicRoutes = require("./routes/public");
-app.use("/api/public", publicRoutes);
+app.use(compression());
 
-app.use((req, res, next) => {
-  if (
-    !req.path.startsWith("/api") &&
-    !req.path.startsWith("/uploads") &&
-    !req.path.includes(".")
-  ) {
-    const filePath = path.join(__dirname, "public", req.path + ".html");
-    return res.sendFile(filePath, err => {
-      if (err) next();
-    });
-  }
-  next();
-});
+/* ================= STATIC (WAJIB DI ATAS) ================= */
 
-const path = require("path");
+// public root (css, js, html)
 app.use(express.static(path.join(__dirname, "public")));
 
+// manga images (hasil scraper)
+app.use("/manga", express.static(path.join(__dirname, "public/manga"), {
+  maxAge: "30d",
+  etag: true
+}));
 
-const mangaRoutes = require("./routes/manga");
-app.use("/api/manga", mangaRoutes);
+// uploads manual
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-const authRoutes = require("./routes/auth");
-app.use("/api/auth", authRoutes);
+/* ================= API ROUTES ================= */
+app.use("/api/public", require("./routes/public"));
+app.use("/api/manga", require("./routes/manga"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/pages", require("./routes/pages"));
+app.use("/api/ads", require("./routes/ads"));
+app.use("/api/genres", require("./routes/genres"));
+app.use("/api/chapters", require("./routes/chapters"));
 
-const pageRoutes = require("./routes/pages");
-app.use("/api/pages", pageRoutes);
+/* ================= HTML FALLBACK ================= */
+// biar bisa buka /manga.html tanpa .html
+app.get("/:page", (req, res, next) => {
+  if (req.path.includes(".")) return next();
 
-// supaya gambar bisa diakses browser
-app.use("/uploads", express.static("uploads"));
+  const filePath = path.join(__dirname, "public", req.params.page + ".html");
+  res.sendFile(filePath, err => {
+    if (err) next();
+  });
+});
 
-const adsRoutes = require("./routes/ads");
-app.use("/api/ads", adsRoutes);
+/* ================= HEALTH CHECK ================= */
+app.get("/health", (_, res) => res.send("OK"));
 
-const genreRoutes = require("./routes/genres");
-app.use("/api/genres", genreRoutes);
-
-const chapterRoutes = require("./routes/chapters");
-app.use("/api/chapters", chapterRoutes); 
-
+/* ================= START SERVER ================= */
 app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+  console.log("🚀 Server running on port", PORT);
 });
-
-app.get("/health", (req, res) => {
-  res.send("OK");
-});
-

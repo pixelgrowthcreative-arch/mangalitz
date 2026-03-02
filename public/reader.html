@@ -1,60 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-  <title>MangaLitz</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/MLbig.png">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>MangaLitz Reader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="icon" type="image/png" href="assets/MLbig.png">
+  <link rel="stylesheet" href="reader.css">
 </head>
+
 <body>
-  <header class="main-header">
-    <div class="logo-wrapper">
-      <img src="assets/mangalitzz.png" class="logo-icon">
-    </div>
-  </header>
 
-
-  <div id="top-ad-1" class="ad-banner top-ad">
-    IKLAN BANNER 728x90
+<!-- HEADER -->
+<header class="main-header">
+  <div class="header-inner">
+    <img src="assets/mangalitzz.png" class="logo">
   </div>
+</header>
 
-  <div id="top-ad-2" class="ad-banner top-ad">
-    IKLAN BANNER 728x90
-  </div>
+<!-- TOP ADS -->
+<div class="ads-wrap">
+  <div class="ad-banner">TOP ADS</div>
+  <div class="ad-banner">TOP ADS</div>
+</div>
 
-  <div id="top-ad-3" class="ad-banner top-ad">
-    IKLAN BANNER 728x90
-  </div>
+<!-- READER -->
+<main class="reader-container">
+  <div id="pages" class="reader"></div>
+</main>
 
-  <div id="top-ad-4" class="ad-banner top-ad">
-    IKLAN BANNER 728x90
-  </div>
+<!-- BOTTOM ADS -->
+<div class="ads-wrap">
+  <div class="ad-banner">BOTTOM ADS</div>
+  <div class="ad-banner">BOTTOM ADS</div>
+</div>
 
+<script src="script.js"></script>
+<script>
+  loadReader();
+</script>
 
-  <div class="container">
-    <div id="pages"></div>
-
-
-  <div id="bottom-ad-1" class="ad-banner bottom-ad">
-    IKLAN BANNER 728x90
-  </div>
-
-  <div id="bottom-ad-2" class="ad-banner bottom-ad">
-    IKLAN BANNER 728x90
-  </div>
-
-  <div id="bottom-ad-3" class="ad-banner bottom-ad">
-    IKLAN BANNER 728x90
-  </div>
-
-  <div id="bottom-ad-4" class="ad-banner bottom-ad">
-    IKLAN BANNER 728x90
-  </div>
-
-  <script src="script.js"></script>
-  <script>loadReader();</script>
-  <script>
-    loadmultipleAds("top", "top-ad", 4);
-    loadMultipleAds("bottom", "bottom-ad", 4);  
-  </script>
 </body>
 </html>
