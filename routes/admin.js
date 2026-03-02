@@ -7,7 +7,7 @@ router.get("/run-scraper", async (req, res) => {
     return res.status(403).send("Forbidden");
   }
 
-  require("../scrapper/scrapeSeeder");
+  require("../jobs/scraper");
   res.send("Scraper started 🚀");
 });
 
