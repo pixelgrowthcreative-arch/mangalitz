@@ -251,9 +251,12 @@ async function autoScroll(page) {
 
 async function mangaExists(slug) {
   const q = await db.query(
-    "SELECT 1 FROM manga WHERE slug=$1",
+    "SELECT id FROM manga WHERE slug=$1",
     [slug]
   );
+
+  console.log("CHECK SLUG:", slug, "FOUND:", q.rowCount);
+
   return q.rowCount > 0;
 }
 
