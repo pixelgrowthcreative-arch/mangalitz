@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
+    "postinstall": "npx puppeteer browsers install chrome",
     "dev": "nodemon app.js",
     "scrape": "node jobs/scraper.js"
-    
   },
   "keywords": [],
   "author": "",
