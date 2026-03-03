@@ -44,7 +44,7 @@ async function loadLogs() {
 }
 
 async function loadManga() {
-  const res = await fetch("/api//admin/manga");
+  const res = await fetch("/api/admin/manga");
   const data = await res.json();
 
   document.getElementById("mangaList").innerHTML =
