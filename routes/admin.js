@@ -25,7 +25,7 @@ router.post("/scrape/start", (req, res) => {
   }
 
   scraperProcess = spawn("node", [
-    path.join(__dirname, "jobs/scraper.js")
+    path.join(__dirname, "../jobs/scraper.js")
   ]);
 
   scraperProcess.stdout.on("data", data => {
