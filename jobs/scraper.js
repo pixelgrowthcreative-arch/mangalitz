@@ -44,6 +44,9 @@ const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
 
+let browser;
+let page;
+
 const BASE_URL = "https://doujin69.com";
 
 const client = axios.create({
@@ -59,6 +62,23 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const mangaDir =  "/data/manga";
 if (!fs.existsSync(mangaDir)) {
   fs.mkdirSync(mangaDir, { recursive: true });
+}
+
+async function initBrowser() {
+  browser = await puppeteer.launch({
+    headless: "new",
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--single-process",
+      "--no-zygote",
+      "--disable-gpu"
+    ]
+  });
+
+  page = await browser.newPage();
+  await page.setUserAgent("Mozilla/5.0 Chrome/120");
 }
 
 async function downloadImage(url, filePath) {
@@ -188,26 +208,18 @@ async function scrapeChapters(link) {
 }
 
 async function scrapePages(url) {
-  let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage"
-      ]   
-    });
-
-    const page = await browser.newPage();
-    await page.setUserAgent("Mozilla/5.0 Chrome/120");
-
     await page.goto(url, {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
       timeout: 60000
     });
 
-    await autoScroll(page);
+    await sleep(3000);
+
+    await page.evaluate(() => {
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+    await new Promise(r => setTimeout(r, 2000));
 
     const images = await page.evaluate(() => {
       const results = [];
@@ -228,61 +240,40 @@ async function scrapePages(url) {
     });
 
     return images.map((url, i) => ({ url, order: i + 1 }));
-  } catch {
+  } catch (err) {
+    console.log("SCRAPE PAGE ERROR:", err.message);
     return [];
-  } finally {
-    if (browser) await browser.close();
   }
-}
-
-async function autoScroll(page) {
-  await page.evaluate(async () => {
-    await new Promise(resolve => {
-      let total = 0;
-      const timer = setInterval(() => {
-        window.scrollBy(0, 400);
-        total += 400;
-        if (total >= document.body.scrollHeight) {
-          clearInterval(timer);
-          resolve();
-        }
-      }, 200);
-    });
-  });
-}
-
-async function mangaExists(slug) {
-  const q = await db.query(
-    "SELECT id FROM manga WHERE slug=$1",
-    [slug]
-  );
-
-  console.log("CHECK SLUG:", slug, "FOUND:", q.rowCount);
-
-  return q.rowCount > 0;
 }
 
 async function saveFullManga(manga, link) {
   const slug = slugify(manga.title, { lower: true, strict: true });
   checkDiskLimit();
 
-  if (await mangaExists(slug)) {
-    console.log("Skip existing:", manga.title);
-    return;
-  }
+  let mangaId;
 
-  const coverPath = `${slug}/cover.jpg`;
-  const localCover = await downloadImage(manga.cover, coverPath);
-
-  // ✅ AUTO APPROVED
-  const result = await db.query(
-    `INSERT INTO manga (title, slug, description, cover_image, status)
-     VALUES ($1,$2,$3,$4,'approved')
-     RETURNING id`,
-    [manga.title, slug, manga.description, localCover]
+  const existing = await db.query(
+    "SELECT id FROM manga WHERE slug=$1",
+    [slug]
   );
 
-  const mangaId = result.rows[0].id;
+  if (existing.rows.length) {
+    mangaId = existing.rows[0].id;
+    console.log("Manga exists, continue chapters:", manga.title);
+  } else {
+    const coverPath = `${slug}/cover.jpg`;
+    const localCover = await downloadImage(manga.cover, coverPath);
+
+    const result = await db.query(
+      `INSERT INTO manga (title, slug, description, cover_image, status)
+      VALUES ($1,$2,$3,$4,'approved')
+      RETURNING id`,
+      [manga.title, slug, manga.description, localCover]
+    );
+
+    mangaId = result.rows[0].id;
+  }
+
 
   // 🔞 FORCE GENRE 18+
   const genre18 = await db.query(
@@ -328,36 +319,68 @@ async function saveFullManga(manga, link) {
   }
 
   // 📚 SAVE CHAPTERS
-  for (const ch of chapters) {
+  // ambil progress terakhir
+  const progressRes = await db.query(
+    "SELECT last_scraped_chapter FROM manga WHERE id=$1",
+    [mangaId]
+  );
+
+  let lastChapterDone =
+  progressRes.rows[0]?.last_scraped_chapter || 0;
+
+// ambil chapter yang belum diproses
+  const chaptersToProcess = chapters
+    .filter(ch => ch.number > lastChapterDone)
+    .slice(0, 40); // 🔥 limit 40 per run
+
+  console.log("PROCESSING CHAPTERS FROM:", lastChapterDone + 1);
+
+  for (const ch of chaptersToProcess) {
     const chRes = await db.query(
       `INSERT INTO chapters (manga_id, chapter_number, title)
-       VALUES ($1,$2,$3)
-       ON CONFLICT DO NOTHING
-       RETURNING id`,
+      VALUES ($1,$2,$3)
+      ON CONFLICT DO NOTHING
+      RETURNING id`,
       [mangaId, ch.number, ch.title]
     );
 
-    if (!chRes.rows.length) continue;
-    const chapterId = chRes.rows[0].id;
+    let chapterId;
+
+    if (chRes.rows.length) {
+      chapterId = chRes.rows[0].id;
+    } else {
+      const existing = await db.query(
+        "SELECT id FROM chapters WHERE manga_id=$1 AND chapter_number=$2",
+        [mangaId, ch.number]
+      );
+      chapterId = existing.rows[0].id;
+    }
 
     const pages = await scrapePages(ch.url);
+    console.log("CHAPTER:", ch.title, "PAGES FOUND:", pages.length);
 
-    await Promise.all(
-      pages.map(async p => {
-        const chapterFolder = String(ch.number).replace(".", "-");
-        const filename = `${slug}/chapters/${chapterFolder}/${p.order}.jpg`;
-        const localUrl = await downloadImage(p.url, filename);
+    for (const p of pages) {
+      const chapterFolder = String(ch.number).replace(".", "-");
+      const filename = `${slug}/chapters/${chapterFolder}/${p.order}.jpg`;
+      const localUrl = await downloadImage(p.url, filename);
 
-        await db.query(
-          `INSERT INTO pages (chapter_id, image_url, page_order)
-           VALUES ($1,$2,$3)
-           ON CONFLICT DO NOTHING`,
-          [chapterId, localUrl, p.order]
-        );
-      })
+      await db.query(
+        `INSERT INTO pages (chapter_id, image_url, page_order)
+        VALUES ($1,$2,$3)
+        ON CONFLICT DO NOTHING`,
+        [chapterId, localUrl, p.order]
+      );
+
+      await sleep(100); // 🔥 penting untuk 512MB
+    }
+
+  // 🔥 update progress setelah chapter selesai
+    await db.query(
+      "UPDATE manga SET last_scraped_chapter=$1 WHERE id=$2",
+      [ch.number, mangaId]
     );
 
-    await sleep(200);
+    await sleep(500); // biar RAM turun
   }
 }
 
@@ -404,7 +427,9 @@ async function saveFullManga(manga, link) {
 async function run() {
   console.log("TEST MODE: 1 PAGE ONLY");
 
-  const list = await scrapeList(1); // cuma page 1
+  await initBrowser();
+
+  const list = await scrapeList(1);
   console.log("Page 1 total:", list.length);
 
   for (const item of list) {
@@ -418,6 +443,7 @@ async function run() {
     await sleep(500);
   }
 
+  await browser.close();
   console.log("DONE TEST");
 }
 
