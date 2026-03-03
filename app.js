@@ -42,6 +42,9 @@ app.use("/api/chapters", require("./routes/chapters"));
 /* ================= HTML FALLBACK ================= */
 // biar bisa buka /manga.html tanpa .html
 app.get("/:page", (req, res, next) => {
+  // Jangan tangkap route API
+  if (req.path.startsWith("/api")) return next();
+
   if (req.path.includes(".")) return next();
 
   const filePath = path.join(__dirname, "public", req.params.page + ".html");
