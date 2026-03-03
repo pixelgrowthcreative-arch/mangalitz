@@ -4,7 +4,6 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
-    "postinstall": "PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer npx puppeteer browsers install chrome",
     "dev": "nodemon app.js",
     "scrape": "node jobs/scraper.js"
   },
