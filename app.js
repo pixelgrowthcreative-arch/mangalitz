@@ -25,7 +25,7 @@ app.use("/manga", express.static("/data/manga"), {
 });
 
 const adminRoutes = require("./routes/admin");
-app.use("/api/admin", adminRoutes);
+//app.use("/api/admin", adminRoutes);
 
 // uploads manual
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
