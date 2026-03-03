@@ -5,6 +5,8 @@ const { execSync } = require("child_process");
 const MAX_LIMIT = 9 * 1024 * 1024 * 1024; // 9GB
 const STORAGE_PATH = "/data/manga";
 
+console.log("SCRAPER FILE LOADED FROM:", __filename);
+
 function checkDiskLimit() {
   try {
     if (!fs.existsSync("/data")) return;
@@ -262,7 +264,7 @@ async function mangaExists(slug) {
 
 async function saveFullManga(manga, link) {
   const slug = slugify(manga.title, { lower: true, strict: true });
-  checkStorageLimit();
+  checkDiskLimit();
 
   if (await mangaExists(slug)) {
     console.log("Skip existing:", manga.title);
