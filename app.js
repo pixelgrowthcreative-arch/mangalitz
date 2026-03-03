@@ -19,10 +19,10 @@ app.use(compression());
 app.use(express.static(path.join(__dirname, "public")));
 
 // manga images (hasil scraper)
-app.use("/manga", express.static(path.join(__dirname, "public/manga"), {
+app.use("/manga", express.static("/data/manga"), {
   maxAge: "30d",
   etag: true
-}));
+});
 
 const adminRoutes = require("./routes/admin");
 app.use("/api/admin", adminRoutes);

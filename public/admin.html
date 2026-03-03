@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MangaLitz Dashboard</title>
+  <style>
+    body { background:#111; color:#fff; font-family:Arial; padding:20px; }
+    button { padding:10px 20px; margin-right:10px; cursor:pointer; }
+    #logs { background:#000; height:250px; overflow:auto; padding:10px; font-family:monospace; }
+    .card { background:#1c1c1c; padding:15px; margin-top:20px; border-radius:8px; }
+  </style>
+</head>
+<body>
+
+<h2>Scraper Control</h2>
+
+<button onclick="start()">▶ Start</button>
+<button onclick="stop()">⏹ Stop</button>
+
+<div class="card">
+  <h3>Live Logs</h3>
+  <div id="logs"></div>
+</div>
+
+<div class="card">
+  <h3>Latest Manga Added</h3>
+  <div id="mangaList"></div>
+</div>
+
+<script>
+async function start() {
+  await fetch("/api/admin/scrape/start", { method: "POST" });
+}
+
+async function stop() {
+  await fetch("/api/admin/scrape/stop", { method: "POST" });
+}
+
+async function loadLogs() {
+  const res = await fetch("/api/admin/logs");
+  const data = await res.json();
+  const box = document.getElementById("logs");
+  box.innerHTML = data.join("<br>");
+  box.scrollTop = box.scrollHeight;
+}
+
+async function loadManga() {
+  const res = await fetch("/api//admin/manga");
+  const data = await res.json();
+
+  document.getElementById("mangaList").innerHTML =
+    data.map(m => `<div>📚 ${m.title}</div>`).join("");
+}
+
+setInterval(loadLogs, 2000);
+setInterval(loadManga, 4000);
+
+loadLogs();
+loadManga();
+</script>
+
+</body>
+</html>

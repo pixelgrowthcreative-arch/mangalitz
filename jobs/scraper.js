@@ -1,5 +1,30 @@
 require("dotenv").config();
-  
+
+const { execSync } = require("child_process");
+
+const MAX_LIMIT = 9 * 1024 * 1024 * 1024; // 9GB
+const STORAGE_PATH = "/data/manga";
+
+function checkDiskLimit() {
+  try {
+    if (!fs.existsSync("/data")) return;
+
+    const output = execSync("du -sb /data").toString();
+    const size = parseInt(output.split("\t")[0], 10);
+
+    const usedGB = size / (1024 * 1024 * 1024);
+    console.log("Disk usage:", usedGB.toFixed(2), "GB");
+
+    if (usedGB >= 9) {
+      console.log("⚠️ STORAGE LIMIT 9GB REACHED. STOPPING SCRAPER SAFELY.");
+      process.exit(0);
+    }
+
+  } catch (err) {
+    console.log("Disk check error:", err.message);
+  }
+}
+
 process.on("unhandledRejection", err => {
   console.error("UNHANDLED:", err);
 });
@@ -29,7 +54,7 @@ const client = axios.create({
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-const mangaDir = path.join(__dirname, "../public/manga");
+const mangaDir =  "/data/manga";
 if (!fs.existsSync(mangaDir)) {
   fs.mkdirSync(mangaDir, { recursive: true });
 }
@@ -44,6 +69,8 @@ async function downloadImage(url, filePath) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
     const webpPath = fullPath.replace(".jpg", ".webp");
+
+    checkDiskLimit(); // 🔥 cek sebelum save
 
     try {
       await sharp(res.data)
@@ -232,6 +259,7 @@ async function mangaExists(slug) {
 
 async function saveFullManga(manga, link) {
   const slug = slugify(manga.title, { lower: true, strict: true });
+  checkStorageLimit();
 
   if (await mangaExists(slug)) {
     console.log("Skip existing:", manga.title);
@@ -375,6 +403,7 @@ async function run() {
   console.log("Page 1 total:", list.length);
 
   for (const item of list) {
+    checkDiskLimit();
     try {
       const detail = await scrapeDetail(item.link);
       await saveFullManga(detail, item.link);
