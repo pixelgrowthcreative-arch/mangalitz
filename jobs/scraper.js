@@ -76,8 +76,10 @@ async function initBrowser() {
       "--single-process",
       "--no-zygote",
       "--disable-gpu",
-      "--disable-features=site-per-process"
-    ]
+      "--disable-features=site-per-process",
+      "--disable-dev-shm-usage"
+    ],
+    protocolTimeout: 120000
   });
 
   page = await browser.newPage();
@@ -211,8 +213,14 @@ async function scrapeChapters(link) {
 
 async function scrapePages(url) {
   try {
+    await page.setViewport({ width: 1280, height: 2000 });
+
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+    );
+
     await page.goto(url, {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
       timeout: 60000
     });
 
@@ -222,13 +230,13 @@ async function scrapePages(url) {
     );
 
     // tunggu reader
-    await page.waitForSelector(".entry-content img", { timeout: 20000 });
+    await page.waitForSelector(".entry-content", { timeout: 30000 });
 
     // scroll supaya lazyload aktif
     await page.evaluate(async () => {
       await new Promise(resolve => {
         let totalHeight = 0;
-        const distance = 300;
+        const distance = 500;
 
         const timer = setInterval(() => {
           window.scrollBy(0, distance);
@@ -238,7 +246,7 @@ async function scrapePages(url) {
             clearInterval(timer);
             resolve();
           }
-        }, 100);
+        }, 200);
       });
     });
 
@@ -247,7 +255,7 @@ async function scrapePages(url) {
     const images = await page.evaluate(() => {
       const results = [];
 
-      document.querySelectorAll(".entry-content img").forEach(img => {
+      document.querySelectorAll(".entry-content img, .maincontent img").forEach(img => {
         const src =
           img.getAttribute("data-src") ||
           img.getAttribute("data-lazy-src") ||
