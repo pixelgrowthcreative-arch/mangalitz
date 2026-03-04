@@ -189,26 +189,27 @@ async function scrapeChapters(link) {
 async function scrapePages(url) {
   try {
     const html = await fetch(url);
+    const $ = cheerio.load(html);
 
     const images = [];
 
-    const match = html.match(/images\s*:\s*\[(.*?)\]/s);
+    $("#readerarea img").each((i, el) => {
+      const src =
+        $(el).attr("data-src") ||
+        $(el).attr("src");
 
-    if (!match) {
-      console.log("NO IMAGE LIST FOUND");
-      return [];
-    }
+      if (!src) return;
 
-    const raw = match[1];
+      if (!src.includes("webtoon168")) return;
 
-    raw.split(",").forEach(x => {
-      const img = x.replace(/['"\s]/g, "");
-      if (img.startsWith("http")) images.push(img);
+      images.push(src);
     });
 
-    console.log("PAGES FOUND:", images.length);
+    const unique = [...new Set(images)];
 
-    return images.map((img, i) => ({
+    console.log("PAGES FOUND:", unique.length);
+
+    return unique.map((img, i) => ({
       url: img,
       order: i + 1
     }));
