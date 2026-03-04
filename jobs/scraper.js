@@ -66,7 +66,7 @@ if (!fs.existsSync(mangaDir)) {
 
 async function initBrowser() {
 
-  const browser = await puppeteer.launch({
+  browser = await puppeteer.launch({
     headless: true,
     executablePath: puppeteer.executablePath(),
     args: [
@@ -75,7 +75,8 @@ async function initBrowser() {
       "--disable-dev-shm-usage",
       "--single-process",
       "--no-zygote",
-      "--disable-gpu"
+      "--disable-gpu",
+      "--disable-features=site-per-process"
     ]
   });
 
@@ -214,6 +215,8 @@ async function scrapePages(url) {
       waitUntil: "domcontentloaded",
       timeout: 60000
     });
+    
+    await page.waitForSelector("img", { timeout: 15000 });
 
     await sleep(3000);
 
