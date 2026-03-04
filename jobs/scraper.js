@@ -65,10 +65,8 @@ if (!fs.existsSync(mangaDir)) {
 }
 
 async function initBrowser() {
-
   browser = await puppeteer.launch({
-    headless: true,
-    executablePath: puppeteer.executablePath(),
+    headless: "new",
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -79,10 +77,10 @@ async function initBrowser() {
       "--disable-features=site-per-process",
       "--disable-dev-shm-usage"
     ],
-    protocolTimeout: 120000
   });
 
   page = await browser.newPage();
+  await page.setUserAgent("Mozilla/5.0 Chrome/120");
 }
 
 async function downloadImage(url, filePath) {
@@ -213,59 +211,26 @@ async function scrapeChapters(link) {
 
 async function scrapePages(url) {
   try {
-    await page.setViewport({ width: 1280, height: 2000 });
-
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
-    );
 
     await page.goto(url, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle2",
       timeout: 60000
     });
 
-    await page.setViewport({ width: 1280, height: 2000 });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
-    );
-
-    // tunggu reader
-    await page.waitForSelector(".entry-content", { timeout: 30000 });
-
-    // scroll supaya lazyload aktif
-    await page.evaluate(async () => {
-      await new Promise(resolve => {
-        let totalHeight = 0;
-        const distance = 500;
-
-        const timer = setInterval(() => {
-          window.scrollBy(0, distance);
-          totalHeight += distance;
-
-          if (totalHeight >= document.body.scrollHeight) {
-            clearInterval(timer);
-            resolve();
-          }
-        }, 200);
-      });
-    });
-
-    await new Promise(r => setTimeout(r, 3000));
+    await autoScroll(page);
 
     const images = await page.evaluate(() => {
       const results = [];
 
-      document.querySelectorAll(".entry-content img, .maincontent img").forEach(img => {
-        const src =
-          img.getAttribute("data-src") ||
-          img.getAttribute("data-lazy-src") ||
-          img.getAttribute("data-original") ||
-          img.getAttribute("src");
+      document.querySelectorAll("img").forEach(img => {
+        let src =
+          img.dataset.src ||
+          img.dataset.lazySrc ||
+          img.dataset.original ||
+          img.src;
 
         if (!src) return;
-
-        if (src.match(/logo|icon|banner|ads|gif/i)) return;
-
+        if (src.match(/logo|icon|banner|ads|\.gif/i)) return;
         if (!src.match(/\.(jpg|jpeg|png|webp)/i)) return;
 
         results.push(src);
@@ -274,15 +239,9 @@ async function scrapePages(url) {
       return [...new Set(results)];
     });
 
-    console.log("PAGES FOUND:", images.length);
+    return images.map((url, i) => ({ url, order: i + 1 }));
 
-    return images.map((img, i) => ({
-      url: img,
-      order: i + 1
-    }));
-
-  } catch (err) {
-    console.log("SCRAPE PAGE ERROR:", err.message);
+  } catch {
     return [];
   }
 }
