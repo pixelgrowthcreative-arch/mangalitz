@@ -65,10 +65,10 @@ if (!fs.existsSync(mangaDir)) {
 }
 
 async function initBrowser() {
-  const executablePath = puppeteer.executablePath();
 
-  browser = await puppeteer.launch({
-    headless: "new",
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: puppeteer.executablePath(),
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -80,7 +80,6 @@ async function initBrowser() {
   });
 
   page = await browser.newPage();
-  await page.setUserAgent("Mozilla/5.0 Chrome/120");
 }
 
 async function downloadImage(url, filePath) {
