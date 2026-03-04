@@ -212,38 +212,67 @@ async function scrapeChapters(link) {
 async function scrapePages(url) {
   try {
     await page.goto(url, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle2",
       timeout: 60000
     });
-    
-    await page.waitForSelector("img", { timeout: 15000 });
 
-    await sleep(3000);
+    await page.setViewport({ width: 1280, height: 2000 });
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+    );
 
-    await page.evaluate(() => {
-      window.scrollTo(0, document.body.scrollHeight);
+    // tunggu reader
+    await page.waitForSelector(".entry-content img", { timeout: 20000 });
+
+    // scroll supaya lazyload aktif
+    await page.evaluate(async () => {
+      await new Promise(resolve => {
+        let totalHeight = 0;
+        const distance = 300;
+
+        const timer = setInterval(() => {
+          window.scrollBy(0, distance);
+          totalHeight += distance;
+
+          if (totalHeight >= document.body.scrollHeight) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, 100);
+      });
     });
-    await new Promise(r => setTimeout(r, 2000));
+
+    await new Promise(r => setTimeout(r, 3000));
 
     const images = await page.evaluate(() => {
       const results = [];
-      document.querySelectorAll("img").forEach(img => {
-        let src =
-          img.dataset.src ||
-          img.dataset.lazySrc ||
-          img.dataset.original ||
-          img.src;
+
+      document.querySelectorAll(".entry-content img").forEach(img => {
+        const src =
+          img.getAttribute("data-src") ||
+          img.getAttribute("data-lazy-src") ||
+          img.getAttribute("data-original") ||
+          img.getAttribute("src");
 
         if (!src) return;
-        if (src.match(/logo|icon|banner|ads|\.gif/i)) return;
+
+        if (src.match(/logo|icon|banner|ads|gif/i)) return;
+
         if (!src.match(/\.(jpg|jpeg|png|webp)/i)) return;
 
         results.push(src);
       });
+
       return [...new Set(results)];
     });
 
-    return images.map((url, i) => ({ url, order: i + 1 }));
+    console.log("PAGES FOUND:", images.length);
+
+    return images.map((img, i) => ({
+      url: img,
+      order: i + 1
+    }));
+
   } catch (err) {
     console.log("SCRAPE PAGE ERROR:", err.message);
     return [];
