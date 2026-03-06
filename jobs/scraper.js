@@ -226,7 +226,9 @@ async function scrapePages(url) {
       timeout: 60000
     });
 
-    await page.waitForTimeout(10000);
+    await page.waitForFunction(() => {
+      return !document.title.includes("Just a moment");
+    }, { timeout: 30000 });
 
     await autoScroll(page);
     await page.waitForTimeout(3000);
