@@ -222,7 +222,7 @@ async function scrapePages(url) {
     });
 
     await page.goto(url, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle2",
       timeout: 60000
     });
 
@@ -234,7 +234,7 @@ async function scrapePages(url) {
     }, { timeout: 30000 });
 
     await autoScroll(page);
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(5000);
 
     const images = await page.evaluate(() => {
       const results = [];
