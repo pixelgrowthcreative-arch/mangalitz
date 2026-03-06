@@ -226,6 +226,9 @@ async function scrapePages(url) {
       timeout: 60000
     });
 
+    const html = await page.content();
+    console.log("HTML LENGTH:", html.length);
+
     const title = await page.title();
     console.log("PAGE TITLE:", title);
 
@@ -234,7 +237,7 @@ async function scrapePages(url) {
     }, { timeout: 30000 });
 
     await autoScroll(page);
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(4000);
 
     const images = await page.evaluate(() => {
       const results = [];
