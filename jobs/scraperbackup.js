@@ -196,38 +196,31 @@ async function scrapeChapters(link) {
 
 async function scrapePages(url) {
   let browser;
-
   try {
     browser = await puppeteer.launch({
       headless: "new",
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage"
-      ]
+        "--disable-dev-shm-usage",
+        "--disable-blink-features=AutomationControlled"
+      ]   
     });
 
     const page = await browser.newPage();
+    await page.setViewport({
+      width: 1366,
+      height: 768
+    });
 
-    const images = [];
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+    );
 
-    page.on("request", req => {
-      const type = req.resourceType();
-      const url = req.url();
-
-      if (type === "image") {
-
-      if (!url.match(/\.(jpg|jpeg|png|webp)/i)) return;
-
-      if (
-        url.includes("logo") ||
-        url.includes("icon") ||
-        url.includes("banner") ||
-        url.includes("ads")
-      ) return;
-
-      images.push(url);
-      }
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, "webdriver", {
+        get: () => false
+      });
     });
 
     await page.goto(url, {
@@ -235,18 +228,50 @@ async function scrapePages(url) {
       timeout: 60000
     });
 
+    const html = await page.content();
+    console.log("HTML LENGTH:", html.length);
+
+    const title = await page.title();
+    console.log("PAGE TITLE:", title);
+
+    await page.waitForFunction(() => {
+      return !document.title.includes("Just a moment");
+    }, { timeout: 30000 });
+
     await autoScroll(page);
-    await page.waitForTimeout(6000);
+    await page.waitForTimeout(3000);
 
-    const unique = [...new Set(images)];
+    // force load lazy images
+    await page.evaluate(() => {
+      document.querySelectorAll("img, picture source").forEach(img => {
+        if (img.dataset.src) img.src = img.dataset.src;
+        if (img.dataset.original) img.src = img.dataset.original;
+        if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
+      });
+    });
 
-    return unique.map((url, i) => ({
-      url,
-      order: i + 1
-    }));
+    await page.waitForTimeout(2000);
 
-  } catch (err) {
-    console.log("SCRAPE PAGE ERROR:", err.message);
+    const images = await page.evaluate(() => {
+      const results = [];
+      document.querySelectorAll("img, picture source").forEach(img => {
+        let src =
+          img.dataset.src ||
+          img.dataset.lazySrc ||
+          img.dataset.original ||
+          img.src;
+
+        if (!src) return;
+        if (src.match(/logo|icon|banner|ads|\.gif/i)) return;
+        if (!src.match(/\.(jpg|jpeg|png|webp)/i)) return;
+
+        results.push(src);
+      });
+      return [...new Set(results)];
+    });
+
+    return images.map((url, i) => ({ url, order: i + 1 }));
+  } catch {
     return [];
   } finally {
     if (browser) await browser.close();
