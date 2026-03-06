@@ -171,22 +171,24 @@ async function scrapeChapters(link) {
     const $ = cheerio.load(html);
     const chapters = [];
 
-    $("a").each((_, el) => {
+    $("#chapterlist a, .eplister a").each((_, el) => {
       const title = $(el).text().trim();
       const url = $(el).attr("href");
-      if (!url) return;
 
-      if (!url.startsWith(BASE_URL)) return;
-      if (url.includes("/doujin/")) return;
-      if (!/ตอน|chapter/i.test(title + url)) return;
+      if (!url) return;
 
       const match = title.match(/(\d+(\.\d+)?)/);
       const num = match ? parseFloat(match[1]) : chapters.length + 1;
 
-      chapters.push({ title, number: num, url });
+      chapters.push({
+        title,
+        number: num,
+        url
+      });
     });
 
     return [...new Map(chapters.map(c => [c.url, c])).values()].reverse();
+
   } catch {
     return [];
   }
@@ -370,6 +372,7 @@ async function saveFullManga(manga, link) {
     if (!chRes.rows.length) continue;
     const chapterId = chRes.rows[0].id;
 
+    console.log("OPEN CHAPTER URL:", ch.url);
     const pages = await scrapePages(ch.url);
     console.log("CHAPTER:", ch.title, "PAGES FOUND:", pages.length);
 
