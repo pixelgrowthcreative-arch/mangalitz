@@ -39,6 +39,7 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const slugify = require("slugify");
 const db = require("../config/db");
+const puppeteer = require("puppeteer");
 const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
@@ -187,38 +188,67 @@ async function scrapeChapters(link) {
 }
 
 async function scrapePages(url) {
+  let browser;
   try {
-    const html = await fetch(url);
-
-    const images = [];
-
-    const match = html.match(/images\s*:\s*\[(.*?)\]/s);
-
-    if (!match) {
-      console.log("IMAGE ARRAY NOT FOUND");
-      return [];
-    }
-
-    const raw = match[1];
-
-    raw.split(",").forEach(x => {
-      const img = x.replace(/["'\s]/g, "");
-      if (img.startsWith("http")) images.push(img);
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage"
+      ]   
     });
 
-    const unique = [...new Set(images)];
+    const page = await browser.newPage();
+    await page.setUserAgent("Mozilla/5.0 Chrome/120");
 
-    console.log("PAGES FOUND:", unique.length);
+    await page.goto(url, {
+      waitUntil: "networkidle2",
+      timeout: 60000
+    });
 
-    return unique.map((img, i) => ({
-      url: img,
-      order: i + 1
-    }));
+    await autoScroll(page);
 
-  } catch (err) {
-    console.log("SCRAPE PAGE ERROR:", err.message);
+    const images = await page.evaluate(() => {
+      const results = [];
+      document.querySelectorAll("img").forEach(img => {
+        let src =
+          img.dataset.src ||
+          img.dataset.lazySrc ||
+          img.dataset.original ||
+          img.src;
+
+        if (!src) return;
+        if (src.match(/logo|icon|banner|ads|\.gif/i)) return;
+        if (!src.match(/\.(jpg|jpeg|png|webp)/i)) return;
+
+        results.push(src);
+      });
+      return [...new Set(results)];
+    });
+
+    return images.map((url, i) => ({ url, order: i + 1 }));
+  } catch {
     return [];
+  } finally {
+    if (browser) await browser.close();
   }
+}
+
+async function autoScroll(page) {
+  await page.evaluate(async () => {
+    await new Promise(resolve => {
+      let total = 0;
+      const timer = setInterval(() => {
+        window.scrollBy(0, 400);
+        total += 400;
+        if (total >= document.body.scrollHeight) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, 200);
+    });
+  });
 }
 
 async function mangaExists(slug) {
@@ -328,7 +358,7 @@ async function saveFullManga(manga, link) {
       })
     );
 
-    await sleep(300);
+    await sleep(200);
   }
 }
 
