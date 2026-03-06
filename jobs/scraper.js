@@ -239,11 +239,22 @@ async function scrapePages(url) {
     }, { timeout: 30000 });
 
     await autoScroll(page);
-    await page.waitForTimeout(4000);
+    await page.waitForTimeout(3000);
+
+    // force load lazy images
+    await page.evaluate(() => {
+      document.querySelectorAll("img, picture source").forEach(img => {
+        if (img.dataset.src) img.src = img.dataset.src;
+        if (img.dataset.original) img.src = img.dataset.original;
+        if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
+      });
+    });
+
+    await page.waitForTimeout(2000);
 
     const images = await page.evaluate(() => {
       const results = [];
-      document.querySelectorAll("img").forEach(img => {
+      document.querySelectorAll("img, picture source").forEach(img => {
         let src =
           img.dataset.src ||
           img.dataset.lazySrc ||
