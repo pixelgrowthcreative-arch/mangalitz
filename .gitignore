@@ -5,3 +5,4 @@ debug.html
 public/manga/*
 *.log
 jobs/scraperlokal.js
+storage/manga/*
