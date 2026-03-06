@@ -226,6 +226,9 @@ async function scrapePages(url) {
       timeout: 60000
     });
 
+    const title = await page.title();
+    console.log("PAGE TITLE:", title);
+
     await page.waitForFunction(() => {
       return !document.title.includes("Just a moment");
     }, { timeout: 30000 });
