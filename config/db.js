@@ -6,11 +6,12 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-module.exports = {
-  query: async (text, params) => {
-    const result = await pool.query(text, params);
-    return result; //langsung return result
-  }
-};
+pool.on("connect", () => {
+  console.log("✅ PostgreSQL connected");
+});
+
+pool.on("error", (err) => {
+  console.error("❌ PostgreSQL error:", err);
+});
 
 module.exports = pool;

@@ -408,7 +408,7 @@ async function run() {
   const list = await scrapeList(1); // cuma page 1
   console.log("Page 1 total:", list.length);
 
-  for (const item of list) {
+  for (const item of list.slice(0.5)) {
     checkDiskLimit();
     try {
       const detail = await scrapeDetail(item.link);

@@ -4,3 +4,4 @@ uploads
 debug.html
 public/manga/*
 *.log
+jobs/scraperlokal.js
