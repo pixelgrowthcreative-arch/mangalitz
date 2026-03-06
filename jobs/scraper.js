@@ -39,10 +39,15 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const slugify = require("slugify");
 const db = require("../config/db");
-const puppeteer = require("puppeteer");
 const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
+
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+
+puppeteer.use(StealthPlugin());
+
 
 const BASE_URL = "https://doujin69.com";
 
@@ -195,19 +200,36 @@ async function scrapePages(url) {
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage"
+        "--disable-dev-shm-usage",
+        "--disable-blink-features=AutomationControlled"
       ]   
     });
 
     const page = await browser.newPage();
-    await page.setUserAgent("Mozilla/5.0 Chrome/120");
+    await page.setViewport({
+      width: 1366,
+      height: 768
+    });
+
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+    );
+
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, "webdriver", {
+        get: () => false
+      });
+    });
 
     await page.goto(url, {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
       timeout: 60000
     });
 
+    await page.waitForTimeout(10000);
+
     await autoScroll(page);
+    await page.waitForTimeout(3000);
 
     const images = await page.evaluate(() => {
       const results = [];
@@ -408,7 +430,7 @@ async function run() {
   const list = await scrapeList(1); // cuma page 1
   console.log("Page 1 total:", list.length);
 
-  for (const item of list.slice(0.5)) {
+  for (const item of list.slice(0,5)) {
     checkDiskLimit();
     try {
       const detail = await scrapeDetail(item.link);
