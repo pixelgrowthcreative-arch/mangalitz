@@ -3,7 +3,7 @@
 =============================== */
 // pakai config global
 const BASE = "https://mangalitz.onrender.com";
-const CDN = "http://62.146.233.124:3001";
+const CDN = "//62.146.233.124:3001";
 
 const API = `${BASE}/api/public`;
 const BASE_URL = BASE;
@@ -14,7 +14,7 @@ function fixCover(url) {
 
   if (url.startsWith("http")) return url;
 
-  return "http://62.146.233.124:3001" + url;
+  return CDN + url;
 
 }
 
@@ -312,7 +312,7 @@ function renderGenreSection(genreName, containerId, sourceData = allManga) {
     const div = document.createElement("div");
     div.className = "manga-card";
     div.innerHTML = `
-      <img src="${m.cover_image.startsWith('http') ? m.cover_image : BASE_URL + m.cover_image}">
+      <img src="${fixCover(m.cover_image)}">
       <h3>${m.title}</h3>
     `;
     div.onclick = () => (window.location.href = `manga.html?id=${m.id}`);
