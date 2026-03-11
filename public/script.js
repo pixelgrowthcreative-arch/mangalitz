@@ -9,11 +9,13 @@ const API = `${BASE}/api/public`;
 const BASE_URL = BASE;
 
 function fixCover(url) {
+
   if (!url) return "assets/no-cover.jpg";
 
   if (url.startsWith("http")) return url;
 
-  return CDN + url;
+  return "http://62.146.233.124:3001" + url;
+
 }
 
 function getParam(name) {
