@@ -6,4 +6,4 @@ public/manga/*
 *.log
 jobs/scraperlokal.js
 storage
-jobs/scraperbackup
+jobs/*

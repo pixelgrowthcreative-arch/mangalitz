@@ -219,7 +219,7 @@ async function scrapePages(url) {
 
       if (type === "image") {
 
-      if (!url.match(/\.(jpg|jpeg|png|webp)/i)) return;
+      if (!imgUrl.match(/\.(jpg|jpeg|png|webp)/i)) return;
 
       if (
         url.includes("logo") ||
@@ -228,7 +228,9 @@ async function scrapePages(url) {
         url.includes("ads")
       ) return;
 
-      images.push(url);
+      if (!images.includes(imgUrl)) {
+        images.push(imgUrl);
+      }
       }
     });
 

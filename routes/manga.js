@@ -18,14 +18,14 @@ router.post("/", auth, uploadCover.single("cover"), async (req, res) => {
     }
 
     // 1. insert manga dulu
-    const [rows] = await db.query(
+    const result = await db.query(
       `INSERT INTO manga (title, slug, description, age_rating, user_id, status)
       VALUES ($1, $2, $3, $4, $5, 'pending')
       RETURNING id`,
       [title, slug, description, age_rating, req.user.id]
     );
 
-    const mangaId = rows[0].id;
+    const mangaId = result.rows[0].id;
 
 
     if (genres && genres.length){
@@ -68,21 +68,21 @@ router.post("/", auth, uploadCover.single("cover"), async (req, res) => {
    GET MANGA MILIK USER
 ========================= */
 router.get("/my", auth, async (req, res) => {
-  const [rows] = await db.query(
+  const result = await db.query(
     "SELECT id, title, status, created_at FROM manga WHERE user_id = $1 ORDER BY created_at DESC",
     [req.user.id]
   );
-  res.json(rows);
+  res.json(result.rows);
 });
 
 /* =========================
    GET ALL MANGA (ADMIN)
 ========================= */
 router.get("/all", auth, async (req, res) => {
-  const [rows] = await db.query(
+  const result = await db.query(
     "SELECT id, title FROM manga ORDER BY created_at DESC"
   );
-  res.json(rows);
+  res.json(result.rows);
 });
 
 /* =========================
@@ -126,45 +126,41 @@ router.delete("/:id", auth, async (req, res) => {
 });
 
 router.get("/stats", auth, async (req, res) => {
-  const [[manga]] = await db.query(
-    "SELECT COUNT(*) AS total FROM manga"
-  );
-
-  const [[chapter]] = await db.query(
-    "SELECT COUNT(*) AS total FROM chapters"
-  );
-
-  const [[page]] = await db.query(
-    "SELECT COUNT(*) AS total FROM pages"
-  );
-
-  const [[ads]] = await db.query(
-    "SELECT COUNT(*) AS total FROM ads"
-  );
+  const manga = await db.query("SELECT COUNT(*) AS total FROM manga");
+  const chapter = await db.query("SELECT COUNT(*) AS total FROM chapters");
+  const page = await db.query("SELECT COUNT(*) AS total FROM pages");
+  const ads = await db.query("SELECT COUNT(*) AS total FROM ads");
 
   res.json({
-    manga: manga.total,
-    chapter: chapter.total,
-    page: page.total,
-    ads: ads.total
+    manga: manga.rows[0].total,
+    chapter: chapter.rows[0].total,
+    page: page.rows[0].total,
+    ads: ads.rows[0].total
   });
 });
 
 router.get("/", async (req, res) => {
-  const status = req.query.status;
+  try {
 
-  let sql = "SELECT * FROM manga";
-  let params = [];
+    const status = req.query.status;
 
-  if (status) {
-    sql += " WHERE status = $1";
-    params.push(status);
+    let sql = "SELECT * FROM manga";
+    let params = [];
+
+    if (status) {
+      sql += " WHERE status = $1";
+      params.push(status);
+    }
+
+    const result = await db.query(sql, params);
+
+    res.json(result.rows);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
-
-  const [rows] = await db.query(sql, params);
-  res.json(rows);
 });
-
 
 
 module.exports = router;
