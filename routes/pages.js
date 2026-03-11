@@ -71,7 +71,7 @@ router.get("/chapter/:chapterId", async (req, res) => {
     [req.params.chapterId]
   );
 
-  const CDN = process.env.CDN_URL || "http://62.146.233.124:3001";
+  const CDN = window.CDN_URL || "http://62.146.233.124:3001";
 
   const pages = result.rows.map(p => ({
     ...p,

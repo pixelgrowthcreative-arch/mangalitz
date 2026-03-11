@@ -3,7 +3,7 @@
 =============================== */
 // pakai config global
 const BASE = "https://mangalitz.onrender.com";
-const CDN = "//62.146.233.124:3001";
+const CDN = window.CDN_URL || "http://62.146.233.124:3001";
 
 const API = `${BASE}/api/public`;
 const BASE_URL = BASE;
