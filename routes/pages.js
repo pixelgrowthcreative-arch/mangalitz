@@ -64,31 +64,35 @@ router.delete("/:id", auth, async (req, res) => {
 
 
 // ADMIN READER PREVIEW
-router.get("/admin/chapter/:chapterId", auth, async (req, res) => {
-  try {
-    const [pages] = await db.query(
-      "SELECT image_url, page_order FROM pages WHERE chapter_id = $1 ORDER BY page_order ASC",
-      [req.params.chapterId]
-    );
+router.get("/chapter/:chapterId", async (req, res) => {
 
-    res.json(pages);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Gagal load admin reader" });
-  }
+  const result = await db.query(
+    "SELECT * FROM pages WHERE chapter_id = $1 ORDER BY page_order ASC",
+    [req.params.chapterId]
+  );
+
+  const CDN = process.env.CDN_URL || "http://62.146.233.124:3001";
+
+  const pages = result.rows.map(p => ({
+    ...p,
+    image_url: CDN + p.image_url
+  }));
+
+  res.json(pages);
+
 });
 
 /* =========================
    GET PAGES PER CHAPTER
    (LETakkan PALING BAWAH)
 ========================= */
-router.get("/chapter/:chapterId", async (req, res) => {
-  const [rows] = await db.query(
-    "SELECT * FROM pages WHERE chapter_id = $1 ORDER BY page_order ASC",
-    [req.params.chapterId]
-  );
-  res.json(rows);
-});
+// router.get("/chapter/:chapterId", async (req, res) => {
+//   const [rows] = await db.query(
+//     "SELECT * FROM pages WHERE chapter_id = $1 ORDER BY page_order ASC",
+//     [req.params.chapterId]
+//   );
+//   res.json(rows);
+// });
 
 const uploadPages = require("../config/uploadPages");
 
