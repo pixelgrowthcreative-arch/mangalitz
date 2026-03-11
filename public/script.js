@@ -3,6 +3,7 @@
 =============================== */
 // pakai config global
 const BASE = "https://mangalitz.onrender.com";
+const CDN = "http://62.146.233.124:3001";
 
 const API = `${BASE}/api/public`;
 const BASE_URL = BASE;
@@ -12,7 +13,7 @@ function fixCover(url) {
 
   if (url.startsWith("http")) return url;
 
-  return BASE_URL + url;
+  return CDN + url;
 }
 
 function getParam(name) {
